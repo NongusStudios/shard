@@ -3,3 +3,4 @@
 *.spv
 *.a
 /.vscode
+/out
