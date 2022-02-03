@@ -16,15 +16,17 @@ namespace shard{
                 Buffer(
                     Device& _device,
                     size_t sizeb,
-                    VkBufferUsageFlagBits usageFlag,
-                    VmaMemoryUsage memUsage
+                    VkBufferUsageFlags usageFlag,
+                    VmaMemoryUsage memUsage,
+                    VkMemoryPropertyFlags memProps
                 );
                 Buffer(
                     Device& _device,
                     size_t sizeb,
                     void* data,
-                    VkBufferUsageFlagBits usageFlag,
-                    VmaMemoryUsage memUsage
+                    VkBufferUsageFlags usageFlag,
+                    VmaMemoryUsage memUsage,
+                    VkMemoryPropertyFlags memProps
                 );
                 Buffer(Buffer& buf);
                 Buffer(Buffer&& buf);
@@ -33,11 +35,15 @@ namespace shard{
                 Buffer& operator = (Buffer& buf);
                 Buffer& operator = (Buffer&& buf);
 
-                void map(void** data){
-                    vmaMapMemory(device.allocator(), _allocation, data);
+                void* map(){
+                    if(_mapped) return _mapped;
+                    vmaMapMemory(device.allocator(), _allocation, &_mapped);
+                    return _mapped;
                 }
                 void unmap(){
+                    if(!_mapped) return;
                     vmaUnmapMemory(device.allocator(), _allocation);
+                    _mapped = nullptr;
                 }
                 void bindVertex(VkCommandBuffer commandBuffer){
                     VkDeviceSize offset = 0;
@@ -47,6 +53,7 @@ namespace shard{
                     VkDeviceSize offset = 0;
                     vkCmdBindIndexBuffer(commandBuffer, _buffer, offset, type);
                 }
+                VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
                 bool valid(){
                     return
@@ -57,15 +64,30 @@ namespace shard{
                 size_t size(){  return _size; }
                 VmaAllocation allocation() { return _allocation; }
                 VkBuffer buffer() { return _buffer; }
-                VkBufferUsageFlagBits usage() { return _usage; }
+                VkBufferUsageFlags usage() { return _usage; }
+                void* mappedMemory() { return _mapped; }
+                bool mapped() { return _mapped != nullptr; }
+                VkDeviceSize getAlignment(
+                    VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment
+                ){
+                    if(minOffsetAlignment > 0){
+                        return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
+                    }
+                    return instanceSize;
+                }
             private:
-                void createBuffer(void* data, VmaMemoryUsage memUsage);
+                void createBuffer(
+                    void* data, 
+                    VmaMemoryUsage memUsage,
+                    VkMemoryPropertyFlags memProps
+                );
 
                 Device& device;
                 VmaAllocation _allocation = VK_NULL_HANDLE;
                 size_t _size;
                 VkBuffer _buffer = VK_NULL_HANDLE;
-                VkBufferUsageFlagBits _usage;
+                VkBufferUsageFlags _usage;
+                void* _mapped = nullptr;
         };
     } // namespace gfx
 } // namespace shard

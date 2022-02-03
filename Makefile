@@ -11,9 +11,11 @@ OBJ = $(SRC:%.cpp=%.o)
 SHADER_SPV = $(SHADERS:%=%.spv)
 
 OUT = out
-CURRENT_EXAMPLE = examples/main.cpp
 
-.PHONY: all clean cleanobj run libs
+MODERN_ART_EXAMPLE = examples/modern_art.cpp
+CURRENT_EXAMPLE = $(MODERN_ART_EXAMPLE)
+
+.PHONY: all clean cleanobj cleanspv run libs
 
 all: libs build run
 
@@ -30,8 +32,10 @@ run:
 
 cleanobj:
 	rm $(OBJ)
+cleanspv:
+	rm $(SHADER_SPV)
 
-clean: cleanobj
+clean: cleanobj cleanspv
 	rm -rf lib/glfw/build
 	rm -rf lib/vma/build
 	rm $(OUT)

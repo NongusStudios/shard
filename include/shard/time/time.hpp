@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <cstdint>
+#include <iostream>
 
 namespace shard{
     struct Time{
@@ -10,6 +11,29 @@ namespace shard{
         float elapsed=0.0f;
         uint32_t ticks=0;
         float fps=0.0f;
+    };
+    struct TimeStamp{
+        float taken;
+        float ended;
+        float time;
+        std::string name = "Time Stamp";
+        TimeStamp(const std::string& _name):
+            name{_name}
+        {}
+        void take(){
+            taken = static_cast<float>(glfwGetTime());
+        }
+        void end(){
+            ended = static_cast<float>(glfwGetTime());
+            time = ended - taken;
+        }
+        void endAndDisplay(){
+            end();
+            display();
+        }
+        void display(){
+            std::cout << "Time Stamp -> " << name << ": Time elapsed " << time << "s\n";
+        }
     };
     namespace time{
         void updateTime(Time& time);

@@ -99,7 +99,8 @@ namespace shard{
                 device(), 
                 size, data,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                VMA_MEMORY_USAGE_CPU_TO_GPU
+                VMA_MEMORY_USAGE_CPU_TO_GPU,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
         }
         Buffer Graphics::createIndexBuffer(size_t size, void* data){
@@ -107,7 +108,17 @@ namespace shard{
                 device(), 
                 size, data,
                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                VMA_MEMORY_USAGE_CPU_TO_GPU   
+                VMA_MEMORY_USAGE_CPU_TO_GPU,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
+        }
+        Buffer Graphics::createUniformBuffer(size_t size, void* data){
+            return Buffer(
+                device(), 
+                size, data,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VMA_MEMORY_USAGE_CPU_TO_GPU,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
         }
 

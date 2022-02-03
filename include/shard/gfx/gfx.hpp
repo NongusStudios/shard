@@ -71,6 +71,7 @@ namespace shard{
                 );
                 Buffer createVertexBuffer(size_t size, void* data);
                 Buffer createIndexBuffer(size_t size, void* data);
+                Buffer createUniformBuffer(size_t size, void* data);
 
                 VkCommandBuffer beginRenderPass();
                 void endRenderPass();

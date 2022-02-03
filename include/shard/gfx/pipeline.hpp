@@ -38,8 +38,7 @@ namespace shard{
         class ShaderModule{
             public:
                 ShaderModule(Device& _device):
-                    device{_device},
-                    _shaderModule{VK_NULL_HANDLE}
+                    device{_device}
                 {}
                 ShaderModule(Device& _device, const char* filePath);
                 ShaderModule(Device& _device, const std::vector<char>& spv);
@@ -67,16 +66,15 @@ namespace shard{
                 VkShaderModule shaderModule() { return _shaderModule; }
             private:
                 void init(const std::vector<char>& spv);
-
-                VkShaderModule _shaderModule;
+                
                 Device& device;
+                VkShaderModule _shaderModule=VK_NULL_HANDLE;
         };
 
         class Pipeline{
             public:
                 Pipeline(Device& _device):
-                    device{_device},
-                    _pipeline{VK_NULL_HANDLE}
+                    device{_device}
                 {}
                 Pipeline(
                     Device& _device,
@@ -148,9 +146,8 @@ namespace shard{
                     const std::vector<VkVertexInputAttributeDescription>& attrDescs,
                     PipelineConfigInfo& config
                 );
-
-                VkPipeline _pipeline;
                 Device& device;
+                VkPipeline _pipeline=VK_NULL_HANDLE;
         };
     } // namespace gfx
 } // namespace shard

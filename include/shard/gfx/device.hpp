@@ -71,6 +71,9 @@ namespace shard{
                     VkDeviceMemory &imageMemory
                 );
 
+                VkCommandBuffer beginSingleTimeCommands();
+                void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+                void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             private:
                 void init();
                 void cleanup();

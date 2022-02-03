@@ -6,27 +6,29 @@ namespace shard{
         Buffer::Buffer(
             Device& _device,
             size_t sizeb,
-            VkBufferUsageFlagBits usageFlag,
-            VmaMemoryUsage memUsage
+            VkBufferUsageFlags usageFlag,
+            VmaMemoryUsage memUsage,
+            VkMemoryPropertyFlags memProps
         ):
             device{_device},
             _size{sizeb},
             _usage{usageFlag}
         {
-            createBuffer(nullptr, memUsage);
+            createBuffer(nullptr, memUsage, memProps);
         }
         Buffer::Buffer(
             Device& _device,
             size_t sizeb,
             void* data,
-            VkBufferUsageFlagBits usageFlag,
-            VmaMemoryUsage memUsage
+            VkBufferUsageFlags usageFlag,
+            VmaMemoryUsage memUsage,
+            VkMemoryPropertyFlags memProps
         ):
             device{_device},
             _size{sizeb},
             _usage{usageFlag}
         {
-            createBuffer(data, memUsage);
+            createBuffer(data, memUsage, memProps);
         }
         Buffer::Buffer(Buffer& buf):
             device{buf.device}
@@ -49,6 +51,7 @@ namespace shard{
             buf._buffer = VK_NULL_HANDLE;
         }
         Buffer::~Buffer(){
+            unmap();
             vmaDestroyBuffer(device.allocator(), _buffer, _allocation);
         }
 
@@ -62,6 +65,7 @@ namespace shard{
 
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            return *this;
         }
         Buffer& Buffer::operator = (Buffer&& buf){
             assert(&device == &buf.device);
@@ -73,9 +77,18 @@ namespace shard{
 
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            return *this;
         }
 
-        void Buffer::createBuffer(void* data, VmaMemoryUsage memUsage){
+        VkResult Buffer::flush(VkDeviceSize size, VkDeviceSize offset){
+            return vmaFlushAllocation(device.allocator(), _allocation, offset, size);
+        }
+
+        void Buffer::createBuffer(
+            void* data,
+            VmaMemoryUsage memUsage,
+            VkMemoryPropertyFlags memProps
+        ){
             if(_size == 0) return;
 
             VkBufferCreateInfo bufferInfo = {};
@@ -86,6 +99,7 @@ namespace shard{
 
             VmaAllocationCreateInfo allocInfo = {};
             allocInfo.usage = memUsage;
+            allocInfo.requiredFlags = memProps;
 
             shard_abort_ifnot(
                 vmaCreateBuffer(
@@ -98,9 +112,9 @@ namespace shard{
 
             if(data){
                 void* _data;
-                map(&_data);
+                _data = map();
                 memcpy(_data, data, _size);
-                //unmap();
+                unmap();
             }
         }
     }

@@ -8,10 +8,17 @@
 #include <ctime>
 #include <memory.h>
 
+struct AppUbo{
+    glm::mat4 proj  = glm::mat4(1.0f);
+    glm::mat4 view  = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+};
+
 class App{
     private:
-        const uint32_t triCount = 100;
+        const uint32_t triCount = 200;
         std::vector<shard::gfx::Vertex> triVertices;
+        AppUbo uboData;
 
         int width = 800;
         int height = 600;
@@ -20,6 +27,8 @@ class App{
         shard::gfx::Graphics gfx;
         shard::gfx::Pipeline triPipeline;
         shard::gfx::Buffer triVertexBuffer;
+        shard::gfx::Buffer triStagingBuffer;
+        shard::gfx::Buffer uniformBuffer;
         shard::Input input;
         shard::Time time;
 
@@ -58,10 +67,24 @@ class App{
                     gfx.deafultPipelineConfig()
                 )
             },
+            triStagingBuffer{
+                gfx.device(),
+                sizeof(shard::gfx::Vertex)*triCount*3,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VMA_MEMORY_USAGE_CPU_ONLY,
+                0
+            },
             triVertexBuffer{
-                gfx.createVertexBuffer(
-                    sizeof(shard::gfx::Vertex)*triCount*3,
-                    nullptr
+                gfx.device(),
+                sizeof(shard::gfx::Vertex)*triCount*3,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VMA_MEMORY_USAGE_GPU_ONLY,
+                0
+            },
+            uniformBuffer{
+                gfx.createUniformBuffer(
+                    sizeof(AppUbo),
+                    &uboData
                 )
             },
             input{window}
@@ -70,6 +93,8 @@ class App{
             actions.exit = input.addAction(shard::Key::ESCAPE, INPUT_LAYER_BASE);
             actions.regenTriangles = input.addAction(shard::Key::R, INPUT_LAYER_BASE);
 
+            triStagingBuffer.map();
+            uniformBuffer.map();
             genTriangles();
         }
         ~App(){}
@@ -78,12 +103,12 @@ class App{
             std::srand((uint32_t)std::time(NULL));
             for(size_t i = 0; i < triCount; i+=3){
                 float randy_depth = (float(std::rand())/float((RAND_MAX)) * 1.0f);
-                float randy_color[3] = {
-                    (float(std::rand())/float((RAND_MAX)) * 1.0f),
-                    (float(std::rand())/float((RAND_MAX)) * 1.0f),
-                    (float(std::rand())/float((RAND_MAX)) * 1.0f)
-                };
                 for(size_t j = 0; j < 3; j++){
+                    float randy_color[3] = {
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.1f, 1.0f)
+                    };
                     float randy_pos[2] = {
                         (float(std::rand())/float((RAND_MAX)) * 3.0f) - 1.5f,
                         (float(std::rand())/float((RAND_MAX)) * 3.0f) - 1.5f
@@ -95,9 +120,15 @@ class App{
                 }
             }
             gfx.device().waitIdle();
-            void* data;
-            triVertexBuffer.map(&data);
+            void* data = triStagingBuffer.mappedMemory();
             memcpy(data, triVertices.data(), triVertices.size()*sizeof(shard::gfx::Vertex));
+            triStagingBuffer.flush();
+
+            gfx.device().copyBuffer(
+                triStagingBuffer.buffer(),
+                triVertexBuffer.buffer(),
+                triVertices.size()*sizeof(shard::gfx::Vertex)
+            );
         }
         
         void processInput(){
@@ -121,7 +152,8 @@ class App{
                     break;
             }
         }
-        void update(){}
+        void update(){
+        }
         void render(){
             if(VkCommandBuffer commandBuffer = gfx.beginRenderPass()){
                 triPipeline.bind(commandBuffer);

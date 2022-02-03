@@ -10,7 +10,7 @@ namespace shard{
         class Swapchain{
             public:
                 static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-                static constexpr bool VSYNC = false;
+                static constexpr bool VSYNC = true;
 
                 Swapchain(Device& refDevice, VkExtent2D winExtent);
                 Swapchain(Device& refDevice, VkExtent2D winExtent, std::shared_ptr<Swapchain> previous);
@@ -51,7 +51,8 @@ namespace shard{
                     const std::vector<VkPresentModeKHR> &availablePresentModes
                 );
                 VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
+                
+                Device& device;
                 VkFormat _swapchainImageFormat;
                 VkFormat swapchainDepthFormat;
                 VkExtent2D _swapchainExtent;
@@ -75,8 +76,6 @@ namespace shard{
                 std::vector<VkFence> inFlightFences;
                 std::vector<VkFence> imagesInFlight;
                 size_t currentFrame = 0;
-
-                Device& device;
         };
     } // namespace gfx
 } // namespace shard
