@@ -37,8 +37,11 @@ namespace shard{
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;
+            _size = buf._size;
+            _mapped = buf._mapped;
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            buf._mapped = nullptr;
         }
         Buffer::Buffer(Buffer&& buf):
             device{buf.device}
@@ -47,8 +50,11 @@ namespace shard{
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;
+            _size = buf._size;
+            _mapped = buf._mapped;
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            buf._mapped = nullptr;
         }
         Buffer::~Buffer(){
             unmap();
@@ -58,25 +64,33 @@ namespace shard{
         Buffer& Buffer::operator = (Buffer& buf){
             assert(&device == &buf.device);
             device.waitIdle();
+            unmap();
             vmaDestroyBuffer(device.allocator(), _buffer, _allocation);
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;
+            _size = buf._size;
+            _mapped = buf._mapped;
 
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            buf._mapped = nullptr;
             return *this;
         }
         Buffer& Buffer::operator = (Buffer&& buf){
             assert(&device == &buf.device);
             device.waitIdle();
+            unmap();
             vmaDestroyBuffer(device.allocator(), _buffer, _allocation);
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;
+            _size = buf._size;
+            _mapped = buf._mapped;
 
             buf._allocation = VK_NULL_HANDLE;
             buf._buffer = VK_NULL_HANDLE;
+            buf._mapped = nullptr;
             return *this;
         }
 

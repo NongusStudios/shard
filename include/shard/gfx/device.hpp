@@ -45,6 +45,11 @@ namespace shard{
                 VkQueue graphicsQueue() { return _graphicsQueue; }
                 VkQueue presentQueue() { return _presentQueue; }
                 VkCommandPool commandPool() { return _commandPool; }
+                VkPhysicalDeviceProperties properties() {
+                    VkPhysicalDeviceProperties p = {};
+                    vkGetPhysicalDeviceProperties(_pDevice, &p);
+                    return p;
+                }
                 VmaAllocator allocator() { return _allocator; }
                 GLFWwindow* window() { return _window; }
 

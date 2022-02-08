@@ -32,15 +32,6 @@ namespace shard{
             std::shared_ptr<Swapchain> oldSwapchain = std::move(_swapchain);
             _swapchain = std::make_unique<Swapchain>(*_device, extent, oldSwapchain);
         }
-        void Graphics::createEmptyPipelineLayout(){
-            VkPipelineLayoutCreateInfo createInfo = {};
-            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            shard_abort_ifnot(
-                vkCreatePipelineLayout(
-                    _device->device(), &createInfo, nullptr, &_emptyPipelineLayout
-                ) == VK_SUCCESS
-            );
-        }
         void Graphics::createCommandBuffers(){
             commandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 
@@ -56,6 +47,16 @@ namespace shard{
                 ) == VK_SUCCESS
             );
         }
+        void Graphics::createEmptyPipelineLayout(){
+            VkPipelineLayoutCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            shard_abort_ifnot(
+                vkCreatePipelineLayout(
+                    _device->device(), &createInfo, nullptr, &_emptyPipelineLayout
+                ) == VK_SUCCESS
+            );
+        }
+        
         void Graphics::destroyCommandBuffers(){
             vkFreeCommandBuffers(
                 _device->device(),
@@ -74,7 +75,7 @@ namespace shard{
             const std::vector<VkVertexInputAttributeDescription>& attrDescs,
             PipelineConfigInfo& config
         ){
-            return Pipeline(device(), swapchain(), layout, 
+            return Pipeline(device(), swapchain().renderPass(), layout, 
                 vertFile, fragFile,
                 bindingDescs, attrDescs,
                 config
@@ -88,7 +89,7 @@ namespace shard{
             const std::vector<VkVertexInputAttributeDescription>& attrDescs,
             PipelineConfigInfo& config
         ){
-            return Pipeline(device(), swapchain(), layout, 
+            return Pipeline(device(), swapchain().renderPass(), layout, 
                 vertFile, fragFile,
                 bindingDescs, attrDescs,
                 config

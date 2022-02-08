@@ -35,6 +35,15 @@ namespace shard{
                 Buffer& operator = (Buffer& buf);
                 Buffer& operator = (Buffer&& buf);
 
+                VkDescriptorBufferInfo descriptorInfo(
+                    VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0
+                ){
+                    return VkDescriptorBufferInfo{
+                        _buffer,
+                        offset,
+                        size,
+                    };
+                }
                 void* map(){
                     if(_mapped) return _mapped;
                     vmaMapMemory(device.allocator(), _allocation, &_mapped);
@@ -67,7 +76,7 @@ namespace shard{
                 VkBufferUsageFlags usage() { return _usage; }
                 void* mappedMemory() { return _mapped; }
                 bool mapped() { return _mapped != nullptr; }
-                VkDeviceSize getAlignment(
+                static VkDeviceSize getAlignment(
                     VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment
                 ){
                     if(minOffsetAlignment > 0){
@@ -84,7 +93,7 @@ namespace shard{
 
                 Device& device;
                 VmaAllocation _allocation = VK_NULL_HANDLE;
-                size_t _size;
+                size_t _size = 0;
                 VkBuffer _buffer = VK_NULL_HANDLE;
                 VkBufferUsageFlags _usage;
                 void* _mapped = nullptr;

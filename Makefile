@@ -5,7 +5,7 @@ FLAGS = -O0 -g -Wfatal-errors -Wall -pedantic -std=c++20 -Iinclude -Ilib/glfw/in
 LINKER = -lvulkan -lpthread -ldl lib/glfw/build/src/libglfw3.a
 
 SRC  = $(wildcard src/*.cpp) $(wildcard src/**/*.cpp) $(wildcard src/**/**/*.cpp) $(wildcard src/**/**/**/*.cpp)
-SHADERS = $(wildcard shaders/*.vert) $(wildcard shaders/*.frag)
+SHADERS = $(wildcard **/*.vert) $(wildcard **/*.frag) $(wildcard **/**/*.vert) $(wildcard **/**/*.frag)
 
 OBJ = $(SRC:%.cpp=%.o)
 SHADER_SPV = $(SHADERS:%=%.spv)
@@ -37,16 +37,15 @@ cleanspv:
 
 clean: cleanobj cleanspv
 	rm -rf lib/glfw/build
-	rm -rf lib/vma/build
 	rm $(OUT)
 
 lib/glfw/build:
 	mkdir $@
 
-shaders/%.vert.spv: shaders/%.vert
+%.vert.spv: %.vert
 	glslc -o $@ $<
 
-shaders/%.frag.spv: shaders/%.frag
+%.frag.spv: %.frag
 	glslc -o $@ $<
 
 src/%.o: src/%.cpp

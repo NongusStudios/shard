@@ -122,7 +122,7 @@ namespace shard{
         
         Pipeline::Pipeline(
             Device& _device,
-            Swapchain& _swapchain,
+            VkRenderPass _renderPass,
             VkPipelineLayout layout,
             const std::vector<char>& vertSPV,
             const std::vector<char>& fragSPV,
@@ -135,7 +135,7 @@ namespace shard{
             assert(layout != VK_NULL_HANDLE);
             ShaderModule vert(device, vertSPV);
             ShaderModule frag(device, fragSPV);
-            init(_swapchain,
+            init(_renderPass,
                 layout, vert, frag,
                 bindingDescs,
                 attrDescs,
@@ -144,7 +144,7 @@ namespace shard{
         }
         Pipeline::Pipeline(
             Device& _device,
-            Swapchain& _swapchain,
+            VkRenderPass _renderPass,
             VkPipelineLayout layout,
             const char* vertFile,
             const char* fragFile,
@@ -157,7 +157,7 @@ namespace shard{
             assert(layout != VK_NULL_HANDLE);
             ShaderModule vert(device, vertFile);
             ShaderModule frag(device, fragFile);
-            init(_swapchain,
+            init(_renderPass,
                 layout, vert, frag,
                 bindingDescs,
                 attrDescs,
@@ -166,7 +166,7 @@ namespace shard{
         }
         Pipeline::Pipeline(
             Device& _device,
-            Swapchain& _swapchain,
+            VkRenderPass _renderPass,
             VkPipelineLayout layout,
             ShaderModule& vert,
             ShaderModule& frag,
@@ -179,7 +179,7 @@ namespace shard{
             assert(layout != VK_NULL_HANDLE);
             assert(vert.valid());
             assert(frag.valid());
-            init(_swapchain,
+            init(_renderPass,
                 layout, vert, frag,
                 bindingDescs,
                 attrDescs,
@@ -204,7 +204,7 @@ namespace shard{
             vkDestroyPipeline(device.device(), _pipeline, nullptr);
         }
         void Pipeline::init(
-            Swapchain& swapchain,
+            VkRenderPass renderPass,
             VkPipelineLayout layout,
             ShaderModule& vert,
             ShaderModule& frag,
@@ -254,7 +254,7 @@ namespace shard{
             pipelineInfo.pDynamicState = &config.dynamicStateInfo;
 
             pipelineInfo.layout = layout;
-            pipelineInfo.renderPass = swapchain.renderPass();
+            pipelineInfo.renderPass = renderPass;
             pipelineInfo.subpass = config.subpass;
 
             pipelineInfo.basePipelineIndex = -1;

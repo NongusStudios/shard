@@ -78,7 +78,7 @@ namespace shard{
                 {}
                 Pipeline(
                     Device& _device,
-                    Swapchain& _swapchain,
+                    VkRenderPass _renderPass,
                     VkPipelineLayout layout,
                     const std::vector<char>& vertSPV,
                     const std::vector<char>& fragSPV,
@@ -88,7 +88,7 @@ namespace shard{
                 );
                 Pipeline(
                     Device& _device,
-                    Swapchain& _swapchain,
+                    VkRenderPass _renderPass,
                     VkPipelineLayout layout,
                     const char* vertFile,
                     const char* fragFile,
@@ -98,7 +98,7 @@ namespace shard{
                 );
                 Pipeline(
                     Device& _device,
-                    Swapchain& _swapchain,
+                    VkRenderPass _renderPass,
                     VkPipelineLayout layout,
                     ShaderModule& vert,
                     ShaderModule& frag,
@@ -138,7 +138,7 @@ namespace shard{
                 }
             private:
                 void init(
-                    Swapchain& swapchain,
+                    VkRenderPass renderPass,
                     VkPipelineLayout layout,
                     ShaderModule& vert,
                     ShaderModule& frag,

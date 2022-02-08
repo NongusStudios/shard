@@ -2,11 +2,17 @@
 
 #include <memory>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "device.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
 #include "vertex.hpp"
 #include "buffer.hpp"
+#include "descriptor.hpp"
 
 // Thanks to Brendan Galea for the free init code and for getting me started on vulkan
 // (https://github.com/blurrypiano/littleVulkanEngine)
@@ -37,6 +43,7 @@ namespace shard{
                 PipelineConfigInfo& deafultPipelineConfig() {
                     return _defaultPipelineConfig;
                 }
+                VkCommandPool commandPool() { return _device->commandPool(); }
 
                 VkCommandBuffer currentCommandBuffer(){
                     assert(
@@ -77,8 +84,9 @@ namespace shard{
                 void endRenderPass();
             private:
                 void recreateSwapchain();
-                void createEmptyPipelineLayout();
                 void createCommandBuffers();
+                void createEmptyPipelineLayout();
+
                 void destroyCommandBuffers();
 
                 GLFWwindow* _window;
