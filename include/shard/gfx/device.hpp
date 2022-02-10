@@ -78,7 +78,12 @@ namespace shard{
 
                 VkCommandBuffer beginSingleTimeCommands();
                 void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+                void transitionImageLayout(
+                    VkImage image, VkFormat format,
+                    VkImageLayout oldLayout, VkImageLayout newLayout
+                );
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+                void copyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, uint32_t width, uint32_t height);
             private:
                 void init();
                 void cleanup();

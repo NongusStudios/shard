@@ -152,7 +152,7 @@ namespace shard{
                     uint32_t binding, VkDescriptorBufferInfo* bufferInfo
                 );
                 DescriptorWriter& writeImage(
-                    uint32_t binding, VkDescriptorBufferInfo* imageInfo
+                    uint32_t binding, VkDescriptorImageInfo* imageInfo
                 );
 
                 void build(VkDescriptorSet& set);

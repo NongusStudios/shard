@@ -16,7 +16,7 @@ struct AppUbo{
 
 class App{
     private:
-        const uint32_t triCount = 40;
+        const uint32_t triCount = 100;
         std::vector<shard::gfx::Vertex> triVertices;
         glm::vec2 triPos = {0.0f, 0.0f};
         float triRot = 0.0f;
@@ -34,6 +34,8 @@ class App{
         shard::gfx::Buffer triStagingBuffer;
         shard::gfx::Buffer triVertexBuffer;
         std::vector<shard::gfx::Buffer> uniformBuffers;
+        shard::gfx::Image thingImage;
+        shard::gfx::Sampler baseSampler;
         shard::Input input;
         shard::Time time;
 
@@ -95,12 +97,21 @@ class App{
                         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                         shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
                     )
+                    .addPoolSize(
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
+                    )
                     .build()
             },
             descLayout{
                 shard::gfx::DescriptorSetLayout::Builder(gfx.device())
                     .addBinding(
-                        0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT
+                        0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_VERTEX_BIT
+                    )
+                    .addBinding(
+                        1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT
                     )
                     .build()
             },
@@ -131,6 +142,21 @@ class App{
                 VMA_MEMORY_USAGE_GPU_ONLY,
                 0
             },
+            thingImage{
+                gfx.device(),
+                "res/face.jpg"
+            },
+            baseSampler{
+                gfx.device(),
+                VK_FILTER_NEAREST,
+                VK_FILTER_NEAREST,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_TRUE,
+                VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+                VK_SAMPLER_MIPMAP_MODE_NEAREST
+            },
             input{window}
         {
             triVertices.resize(triCount*3);
@@ -155,8 +181,10 @@ class App{
 
             for(size_t i = 0; i < descSets.size(); i++){
                 auto bufferInfo = uniformBuffers[i].descriptorInfo();
+                auto imageInfo = thingImage.descriptorInfo(baseSampler);
                 shard::gfx::DescriptorWriter(descLayout, descPool)
                     .writeBuffer(0, &bufferInfo)
+                    .writeImage(1, &imageInfo)
                     .build(descSets[i]);
             }
 
@@ -179,8 +207,14 @@ class App{
                         std::clamp((float(std::rand())/float((RAND_MAX)) * 2.0f) - 1.0f, -1.0f, 1.0f),
                         std::clamp((float(std::rand())/float((RAND_MAX)) * 2.0f) - 1.0f, -1.0f, 1.0f)
                     };
+                    glm::vec2 uvs[3] = {
+                        {0.5f, 0.0f},
+                        {0.0f, 1.0f},
+                        {1.0f, 1.0f}
+                    };
                     shard::gfx::Vertex v;
                     v.pos = { randy_pos[0], randy_pos[1], randy_depth };
+                    v.uv = uvs[j];
                     v.color = { randy_color[0], randy_color[1], randy_color[2]  };
                     triVertices[i+j] = v;
                 }

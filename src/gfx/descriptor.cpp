@@ -96,17 +96,17 @@ namespace shard{
             );
         }
         DescriptorPool::DescriptorPool(DescriptorPool& dp):
-            device{dp.device}
+            device{dp.device},
+            _pool{dp._pool}
         {
             assert(dp.valid());
-            _pool = dp._pool;
             dp._pool = VK_NULL_HANDLE;
         }
         DescriptorPool::DescriptorPool(DescriptorPool&& dp):
-            device{dp.device}
+            device{dp.device},
+            _pool{dp._pool}
         {
             assert(dp.valid());
-            _pool = dp._pool;
             dp._pool = VK_NULL_HANDLE;
         }
         DescriptorPool::~DescriptorPool(){
@@ -196,7 +196,7 @@ namespace shard{
              return *this;
         }
         DescriptorWriter& DescriptorWriter::writeImage(
-            uint32_t binding, VkDescriptorBufferInfo* imageInfo
+            uint32_t binding, VkDescriptorImageInfo* imageInfo
         ){
             assert(setLayout.bindings.contains(binding));
 
@@ -211,7 +211,7 @@ namespace shard{
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.descriptorType = desc.descriptorType;
             write.dstBinding = binding;
-            write.pBufferInfo = imageInfo;
+            write.pImageInfo = imageInfo;
             write.descriptorCount = 1;
 
             writes.push_back(write);

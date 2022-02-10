@@ -17,6 +17,7 @@ namespace shard{
     namespace gfx{
         struct Vertex{
             glm::vec3 pos;
+            glm::vec2 uv;
             glm::vec3 color;
 
             static VkVertexInputBindingDescription bindingDesc(){
@@ -28,7 +29,7 @@ namespace shard{
             }
 
             static std::vector<VkVertexInputAttributeDescription> attributeDescs(){
-                std::vector<VkVertexInputAttributeDescription> attrs(2);
+                std::vector<VkVertexInputAttributeDescription> attrs(3);
 
                 attrs[0].binding = 0;
                 attrs[0].location = 0;
@@ -37,8 +38,13 @@ namespace shard{
                 
                 attrs[1].binding = 0;
                 attrs[1].location = 1;
-                attrs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attrs[1].offset = offsetof(Vertex, color);
+                attrs[1].format = VK_FORMAT_R32G32_SFLOAT;
+                attrs[1].offset = offsetof(Vertex, uv);
+
+                attrs[2].binding = 0;
+                attrs[2].location = 2;
+                attrs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+                attrs[2].offset = offsetof(Vertex, color);
 
                 return attrs;
             }

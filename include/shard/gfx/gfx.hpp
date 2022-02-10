@@ -13,6 +13,7 @@
 #include "vertex.hpp"
 #include "buffer.hpp"
 #include "descriptor.hpp"
+#include "image.hpp"
 
 // Thanks to Brendan Galea for the free init code and for getting me started on vulkan
 // (https://github.com/blurrypiano/littleVulkanEngine)

@@ -89,17 +89,17 @@ namespace shard{
             init(spv);
         }
         ShaderModule::ShaderModule(ShaderModule& sm):
-            device{sm.device}
+            device{sm.device},
+            _shaderModule{sm._shaderModule}
         {
             assert(sm.valid());
-            _shaderModule = sm._shaderModule;
             sm._shaderModule = VK_NULL_HANDLE;
         }
         ShaderModule::ShaderModule(ShaderModule&& sm):
-            device{sm.device}
+            device{sm.device},
+            _shaderModule{sm._shaderModule}
         {
             assert(sm.valid());
-             _shaderModule = sm._shaderModule;
             sm._shaderModule = VK_NULL_HANDLE;
         }
         ShaderModule::~ShaderModule(){
@@ -187,17 +187,17 @@ namespace shard{
             );
         }
         Pipeline::Pipeline(Pipeline& p):
-            device{p.device}
+            device{p.device},
+            _pipeline{p._pipeline}
         {
             assert(p.valid());
-            _pipeline = p._pipeline;
             p._pipeline = VK_NULL_HANDLE;
         }
         Pipeline::Pipeline(Pipeline&& p):
-            device{p.device}
+            device{p.device},
+            _pipeline{p._pipeline}
         {
             assert(p.valid());
-            _pipeline = p._pipeline;
             p._pipeline = VK_NULL_HANDLE;
         }
         Pipeline::~Pipeline(){

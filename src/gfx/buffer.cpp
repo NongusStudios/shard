@@ -19,7 +19,7 @@ namespace shard{
         Buffer::Buffer(
             Device& _device,
             size_t sizeb,
-            void* data,
+            const void* data,
             VkBufferUsageFlags usageFlag,
             VmaMemoryUsage memUsage,
             VkMemoryPropertyFlags memProps
@@ -99,7 +99,7 @@ namespace shard{
         }
 
         void Buffer::createBuffer(
-            void* data,
+            const void* data,
             VmaMemoryUsage memUsage,
             VkMemoryPropertyFlags memProps
         ){

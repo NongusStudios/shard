@@ -16,6 +16,10 @@
         std::cerr << SHARD_FUNC << " Aborted -> (" << #expr << ") failed.\n"; \
         std::abort(); \
     }
+#define shard_log_and_abort(msg) \
+    std::cerr << SHARD_FUNC << " Aborted -> " << msg << ".\n"; \
+    std::abort()
+
 #define shard_delete_copy_constructors(className) \
     className(const className&) = delete; \
     className& operator = (const className&) = delete; \
