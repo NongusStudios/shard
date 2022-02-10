@@ -399,6 +399,7 @@ namespace shard{
         }
         void Device::transitionImageLayout(
             VkImage image, VkFormat format,
+            uint32_t mipLevels, VkImageAspectFlags aspectMask,
             VkImageLayout oldLayout, VkImageLayout newLayout
         ){
             auto commandBuffer = beginSingleTimeCommands();
@@ -410,9 +411,9 @@ namespace shard{
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = image;
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.aspectMask = aspectMask;
             barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.levelCount = mipLevels;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
 

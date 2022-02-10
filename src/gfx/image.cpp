@@ -1,4 +1,5 @@
 #include <shard/gfx/image.hpp>
+#include <cmath>
 
 namespace shard{
     namespace gfx{
@@ -8,6 +9,10 @@ namespace shard{
             int w, h, channels;
             stbi_uc* pixels = stbi_load(filePath, &w, &h, &channels, STBI_rgb_alpha);
             
+            uint32_t mipLevels = static_cast<uint32_t>(
+                std::floor(std::log2(std::max(w, h)))
+            ) + 1;
+
             *this = Image(
                 device, 
                 uint32_t(w), uint32_t(h), 1,
@@ -16,6 +21,7 @@ namespace shard{
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                 0,
                 VMA_MEMORY_USAGE_GPU_ONLY,
+                VK_IMAGE_ASPECT_COLOR_BIT,
                 pixels
             );
 
@@ -28,6 +34,7 @@ namespace shard{
             VkImageUsageFlags usage,
             VkImageCreateFlags flags,
             VmaMemoryUsage memUsage,
+            VkImageAspectFlags aspectMask,
             const void* pixels
         ):
             device{_device},
@@ -78,12 +85,18 @@ namespace shard{
             );
 
             if(pixels){
-                transition(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                transition(
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    mipLevels, VK_IMAGE_ASPECT_COLOR_BIT
+                );
                 device.copyBufferToImage(
                     stagingBuffer.buffer(), _image,
                     _extent.width, _extent.height 
                 );
-                transition(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transition(
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    mipLevels, VK_IMAGE_ASPECT_COLOR_BIT
+                );
             }
 
             VkImageViewCreateInfo imageViewInfo = {};
@@ -91,7 +104,7 @@ namespace shard{
             imageViewInfo.image = _image;
             imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             imageViewInfo.format = _format;
-            imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            imageViewInfo.subresourceRange.aspectMask = aspectMask;
             imageViewInfo.subresourceRange.baseMipLevel = 0;
             imageViewInfo.subresourceRange.levelCount = 1;
             imageViewInfo.subresourceRange.baseArrayLayer = 0;

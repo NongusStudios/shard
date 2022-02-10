@@ -80,6 +80,7 @@ namespace shard{
                 void endSingleTimeCommands(VkCommandBuffer commandBuffer);
                 void transitionImageLayout(
                     VkImage image, VkFormat format,
+                    uint32_t mipLevels, VkImageAspectFlags aspectMask,
                     VkImageLayout oldLayout, VkImageLayout newLayout
                 );
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);

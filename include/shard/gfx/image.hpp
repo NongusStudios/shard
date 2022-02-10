@@ -47,6 +47,7 @@ namespace shard{
                     VkImageUsageFlags usage,
                     VkImageCreateFlags flags,
                     VmaMemoryUsage memUsage,
+                    VkImageAspectFlags aspectMask,
                     const void* pixels=nullptr
                 );
                 Image(Image& i);
@@ -73,9 +74,13 @@ namespace shard{
                     info.sampler = sampler.sampler();
                     return info;
                 }
-                void transition(VkImageLayout newLayout){
+                void transition(
+                    VkImageLayout newLayout, VkImageAspectFlags aspectMask,
+                    uint32_t mipLevels
+                ){
                     device.transitionImageLayout(
                         _image, _format,
+                        mipLevels, aspectMask,
                         oldLayout, newLayout
                     );
                     oldLayout = newLayout;
