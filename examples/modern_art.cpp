@@ -34,7 +34,8 @@ class App{
         shard::gfx::Buffer triStagingBuffer;
         shard::gfx::Buffer triVertexBuffer;
         std::vector<shard::gfx::Buffer> uniformBuffers;
-        shard::gfx::Image thingImage;
+        shard::gfx::Image skylineImage;
+        shard::gfx::Image faceImage;
         shard::gfx::Sampler baseSampler;
         shard::Input input;
         shard::Time time;
@@ -101,6 +102,10 @@ class App{
                         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                         shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
                     )
+                    .addPoolSize(
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
+                    )
                     .build()
             },
             descLayout{
@@ -112,6 +117,10 @@ class App{
                     .addBinding(
                         1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                         VK_SHADER_STAGE_FRAGMENT_BIT
+                    )
+                    .addBinding(
+                        2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT 
                     )
                     .build()
             },
@@ -142,7 +151,11 @@ class App{
                 VMA_MEMORY_USAGE_GPU_ONLY,
                 0
             },
-            thingImage{
+            skylineImage{
+                gfx.device(),
+                "res/skyline.jpg"
+            },
+            faceImage{
                 gfx.device(),
                 "res/face.jpg"
             },
@@ -181,10 +194,13 @@ class App{
 
             for(size_t i = 0; i < descSets.size(); i++){
                 auto bufferInfo = uniformBuffers[i].descriptorInfo();
-                auto imageInfo = thingImage.descriptorInfo(baseSampler);
+                auto faceImageInfo = faceImage.descriptorInfo(baseSampler);
+                auto skylineImageInfo = skylineImage.descriptorInfo(baseSampler);
+                
                 shard::gfx::DescriptorWriter(descLayout, descPool)
                     .writeBuffer(0, &bufferInfo)
-                    .writeImage(1, &imageInfo)
+                    .writeImage(1, &faceImageInfo)
+                    .writeImage(2, &skylineImageInfo)
                     .build(descSets[i]);
             }
 
