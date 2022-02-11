@@ -16,7 +16,7 @@ struct AppUbo{
 
 class App{
     private:
-        const uint32_t triCount = 100;
+        const uint32_t triCount = 1000;
         std::vector<shard::gfx::Vertex> triVertices;
         glm::vec2 triPos = {0.0f, 0.0f};
         float triRot = 0.0f;
@@ -207,17 +207,19 @@ class App{
             triStagingBuffer.map();
             genTriangles();
         }
-        ~App(){}
+        ~App(){
+            glfwDestroyWindow(window);
+        }
         
         void genTriangles(){
             std::srand((uint32_t)std::time(NULL));
             for(size_t i = 0; i < triCount; i+=3){
-                float randy_depth = std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.001f, 0.99999f);
+                float randy_depth = std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.1f, 0.99999f);
                 for(size_t j = 0; j < 3; j++){
                     float randy_color[3] = {
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.1f, 1.0f)
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f)
                     };
                     float randy_pos[2] = {
                         std::clamp((float(std::rand())/float((RAND_MAX)) * 2.0f) - 1.0f, -1.0f, 1.0f),
@@ -338,8 +340,12 @@ class App{
         }
         void render(){
             if(VkCommandBuffer commandBuffer = gfx.beginRenderPass()){
+                auto wExtent = shard::getWindowExtent(window);
                 AppUbo ubo = {};
-                ubo.proj = glm::mat4(1.0f);
+                ubo.proj = glm::ortho(
+                    -1.0f, 1.0f, -1.0f, 1.0f,
+                    -255.0f, 255.0f
+                );
                 ubo.view = glm::mat4(1.0f);
                 ubo.model = glm::mat4(1.0f);
 
@@ -347,6 +353,7 @@ class App{
                 ubo.model = glm::rotate(
                     ubo.model, glm::radians(triRot), {0.0f, 0.0f, 1.0f}
                 );
+                ubo.model = glm::scale(ubo.model, {0.5f, 0.5f, 1.0f});
 
                 memcpy(
                     uniformBuffers[gfx.frameIndex()].mappedMemory(),

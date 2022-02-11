@@ -11,5 +11,7 @@ layout (set = 0, binding = 2) uniform sampler2D texSampler2;
 layout (location = 0) out vec4 frag_color;
 
 void main(){
-    frag_color = texture(texSampler, uv) * texture(texSampler2, uv);// * vec4(color, 1.0);
+    frag_color = texture(texSampler, uv);//* vec4(color, 1.0);
+    float gray = dot(frag_color.xyz, vec3(0.299, 0.587, 0.114));
+    frag_color = vec4(vec3(gray), 1.0) * texture(texSampler2, uv);
 }

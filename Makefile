@@ -13,7 +13,8 @@ SHADER_SPV = $(SHADERS:%=%.spv)
 OUT = out
 
 MODERN_ART_EXAMPLE = examples/modern_art.cpp
-CURRENT_EXAMPLE = $(MODERN_ART_EXAMPLE)
+MONKEY_EXAMPLE = examples/monkey.cpp
+CURRENT_EXAMPLE = $(MONKEY_EXAMPLE)
 
 .PHONY: all clean cleanobj cleanspv run libs
 
