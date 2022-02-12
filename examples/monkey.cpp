@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <unordered_map>
 #include <functional>
+#include <ctime>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -163,7 +164,7 @@ class Monkey{
                     gfx.deafultPipelineConfig()
                 )
             },
-            monkey{"examples/monkey.obj"},
+            monkey{"examples/models/monkey.obj"},
             vBuffer{
                 gfx.createVertexBuffer(
                     monkey.vertices.size()*sizeof(MonkeyVertex),
@@ -177,6 +178,7 @@ class Monkey{
                 )
             }
         {
+            std::srand((uint32_t)std::time(NULL));
             actions.exit = input.addAction(shard::Key::ESCAPE, 0);
 
             descSets.resize(shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT);
@@ -223,6 +225,18 @@ class Monkey{
                 ubo.model = glm::translate(ubo.model, {0.0f, 0.0f, -5.0f});
                 ubo.model = glm::rotate(ubo.model, rot, {0.0f, 1.0f, 0.0f});
                 ubo.model = glm::scale(ubo.model, {1.0f, 1.0f, 1.0f});
+
+                auto mPos = shard::getCursorPos(window);
+                glm::vec3 normMousePos = glm::vec3(
+                    mPos.x/float(extent.width),
+                    mPos.y/float(extent.height),
+                    std::clamp(
+                        mPos.x/float(extent.width)*
+                        mPos.y/float(extent.height),
+                        0.0f, 1.0f
+                    )
+                );
+                ubo.color = normMousePos;
 
                 memcpy(
                     uBuffers[gfx.frameIndex()].mappedMemory(),
@@ -312,6 +326,7 @@ class Monkey{
             glm::mat4 proj;
             glm::mat4 view;
             glm::mat4 model;
+            glm::vec3 color = {1.0, 1.0, 1.0};
         } ubo;
         shard::Time time;
 

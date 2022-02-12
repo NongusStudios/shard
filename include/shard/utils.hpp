@@ -52,6 +52,12 @@ namespace shard{
         glfwGetFramebufferSize(window, &w, &h);
         return {static_cast<uint32_t>(w), static_cast<uint32_t>(h)};
     }
+    inline glm::vec2 getCursorPos(GLFWwindow* window){
+        assert(window != nullptr);
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
+        return glm::vec2(float(x), float(y));
+    }
 } // namespace shard
 
 /**

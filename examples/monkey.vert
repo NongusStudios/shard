@@ -14,6 +14,7 @@ layout (set = 0, binding = 0) uniform UBO {
     mat4 proj;
     mat4 view;
     mat4 model;
+    vec3 color;
 } ubo;
 
 void main(){
@@ -21,5 +22,5 @@ void main(){
     outPos = vec3(ubo.model * vec4(inPos, 1.0));
     outUv = inUv;
     outNormal = mat3(transpose(inverse(ubo.model))) * inNormal;
-    outColor = inColor;
+    outColor = ubo.color;
 }
