@@ -77,9 +77,9 @@ namespace shard{
                     const std::vector<VkVertexInputAttributeDescription>& attrDescs,
                     PipelineConfigInfo& config
                 );
-                Buffer createVertexBuffer(size_t size, void* data);
-                Buffer createIndexBuffer(size_t size, void* data);
-                Buffer createUniformBuffer(size_t size, void* data);
+                Buffer createVertexBuffer(size_t size, const void* data);
+                Buffer createIndexBuffer(size_t size, const void* data);
+                Buffer createUniformBuffer(size_t size, const void* data);
 
                 VkCommandBuffer beginRenderPass();
                 void endRenderPass();

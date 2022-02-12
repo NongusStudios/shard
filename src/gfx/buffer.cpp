@@ -123,12 +123,9 @@ namespace shard{
                     nullptr
                 ) == VK_SUCCESS
             );
-
+            map();
             if(data){
-                void* _data;
-                _data = map();
-                memcpy(_data, data, _size);
-                unmap();
+                memcpy(_mapped, data, _size);
             }
         }
     }

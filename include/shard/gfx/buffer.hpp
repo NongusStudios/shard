@@ -59,8 +59,7 @@ namespace shard{
                     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_buffer, &offset);
                 }
                 void bindIndex(VkCommandBuffer commandBuffer, VkIndexType type){
-                    VkDeviceSize offset = 0;
-                    vkCmdBindIndexBuffer(commandBuffer, _buffer, offset, type);
+                    vkCmdBindIndexBuffer(commandBuffer, _buffer, 0, type);
                 }
                 VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 

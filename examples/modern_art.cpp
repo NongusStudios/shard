@@ -340,7 +340,6 @@ class App{
         }
         void render(){
             if(VkCommandBuffer commandBuffer = gfx.beginRenderPass()){
-                auto wExtent = shard::getWindowExtent(window);
                 AppUbo ubo = {};
                 ubo.proj = glm::ortho(
                     -1.0f, 1.0f, -1.0f, 1.0f,

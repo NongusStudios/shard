@@ -17,11 +17,9 @@ layout (set = 0, binding = 0) uniform UBO {
 } ubo;
 
 void main(){
-    vec3 pos = vec3(inPos);
-    pos.z += 0.5;
-    gl_Position = /* ubo.proj * ubo.view * ubo.model */ vec4(pos, 1.0);
-    outPos = inPos;
+    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPos, 1.0);
+    outPos = vec3(ubo.model * vec4(inPos, 1.0));
     outUv = inUv;
-    outNormal = inNormal;
+    outNormal = mat3(transpose(inverse(ubo.model))) * inNormal;
     outColor = inColor;
 }
