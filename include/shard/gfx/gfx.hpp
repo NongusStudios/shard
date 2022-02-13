@@ -14,25 +14,14 @@
 #include "buffer.hpp"
 #include "descriptor.hpp"
 #include "image.hpp"
+#include "color.hpp"
 
 // Thanks to Brendan Galea for the free init code and for getting me started on vulkan
 // (https://github.com/blurrypiano/littleVulkanEngine)
 namespace shard{
     namespace gfx{
-        struct Color{
-            Color(float v):
-                r{v},
-                g{v},
-                b{v},
-                a{255.0f}
-            {}
-            float r, g, b, a;
-        };
-
         class Graphics{
             public:
-                static const Color VIEWPORT_COLOR;
-
                 Graphics(GLFWwindow* win);
                 ~Graphics();
 
@@ -81,7 +70,7 @@ namespace shard{
                 Buffer createIndexBuffer(size_t size, const void* data);
                 Buffer createUniformBuffer(size_t size, const void* data);
 
-                VkCommandBuffer beginRenderPass();
+                VkCommandBuffer beginRenderPass(const Color& clearColor);
                 void endRenderPass();
             private:
                 void recreateSwapchain();

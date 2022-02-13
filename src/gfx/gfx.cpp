@@ -2,8 +2,6 @@
 
 namespace shard{
     namespace gfx{
-        const Color Graphics::VIEWPORT_COLOR = Color(33.0f);
-
         Graphics::Graphics(GLFWwindow* win):
             _window{win},
             _defaultPipelineConfig{}
@@ -123,7 +121,7 @@ namespace shard{
             );
         }
 
-        VkCommandBuffer Graphics::beginRenderPass(){
+        VkCommandBuffer Graphics::beginRenderPass(const Color& clearColor){
             assert(!isFrameStarted);
             VkResult result = _swapchain->acquireNextImage(&imageIndex);
             if(result == VK_ERROR_OUT_OF_DATE_KHR){
@@ -157,9 +155,9 @@ namespace shard{
 
             std::array<VkClearValue, 2> clearValues;
             clearValues[0].color = {
-                VIEWPORT_COLOR.r/255.0f,
-                VIEWPORT_COLOR.g/255.0f,
-                VIEWPORT_COLOR.b/255.0f,
+                clearColor.r/255.0f,
+                clearColor.g/255.0f,
+                clearColor.b/255.0f,
                 1.0f
             };
             clearValues[1].depthStencil = {1.0f, 0};

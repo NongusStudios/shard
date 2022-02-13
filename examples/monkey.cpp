@@ -128,6 +128,17 @@ struct Model{
     }
 };
 
+class MonkeyConfig{
+    public:
+        MonkeyConfig():
+            config{}
+        {
+            config.makeDefault();
+            config.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        }
+        shard::gfx::PipelineConfigInfo config;
+};
+
 class Monkey{
     public:
         Monkey():
@@ -154,6 +165,7 @@ class Monkey{
             pLayout{
                 createPipelineLayout()
             },
+            config{},
             pipeline{
                 gfx.createPipeline(
                     pLayout,
@@ -161,7 +173,7 @@ class Monkey{
                     "examples/monkey.frag.spv",
                     {MonkeyVertex::bindingDesc()},
                     MonkeyVertex::attributeDescs(),
-                    gfx.deafultPipelineConfig()
+                    config.config
                 )
             },
             monkey{"examples/models/monkey.obj"},
@@ -213,7 +225,9 @@ class Monkey{
             rot = time.elapsed;
         }
         void render(){
-            if(VkCommandBuffer commandBuffer = gfx.beginRenderPass()){
+            if(VkCommandBuffer commandBuffer = gfx.beginRenderPass(
+                shard::gfx::Color(44.0f, 44.0f, 44.0f)
+            )){
                 auto extent = shard::getWindowExtent(window);
                 ubo.proj = glm::perspective(
                     glm::radians(45.0f), 
@@ -313,6 +327,7 @@ class Monkey{
         shard::gfx::DescriptorPool descPool;
         shard::gfx::DescriptorSetLayout descLayout;
         VkPipelineLayout pLayout;
+        MonkeyConfig config;
         shard::gfx::Pipeline pipeline;
         Model monkey;
         shard::gfx::Buffer vBuffer;

@@ -17,7 +17,7 @@ struct AppUbo{
 class App{
     private:
         const uint32_t triCount = 1000;
-        std::vector<shard::gfx::Vertex> triVertices;
+        std::vector<shard::gfx::Vertex2D> triVertices;
         glm::vec2 triPos = {0.0f, 0.0f};
         float triRot = 0.0f;
 
@@ -132,21 +132,21 @@ class App{
                     triPipelineLayout,
                     "examples/tri.vert.spv",
                     "examples/tri.frag.spv",
-                    {shard::gfx::Vertex::bindingDesc()},
-                    shard::gfx::Vertex::attributeDescs(),
+                    {shard::gfx::Vertex2D::bindingDesc()},
+                    shard::gfx::Vertex2D::attributeDescs(),
                     gfx.deafultPipelineConfig()
                 )
             },
             triStagingBuffer{
                 gfx.device(),
-                sizeof(shard::gfx::Vertex)*triCount*3,
+                sizeof(shard::gfx::Vertex2D)*triCount*3,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VMA_MEMORY_USAGE_CPU_ONLY,
-                0
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
             },
             triVertexBuffer{
                 gfx.device(),
-                sizeof(shard::gfx::Vertex)*triCount*3,
+                sizeof(shard::gfx::Vertex2D)*triCount*3,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                 VMA_MEMORY_USAGE_GPU_ONLY,
                 0
@@ -214,12 +214,12 @@ class App{
         void genTriangles(){
             std::srand((uint32_t)std::time(NULL));
             for(size_t i = 0; i < triCount; i+=3){
-                float randy_depth = std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.1f, 0.99999f);
+                //float randy_depth = std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.1f, 0.99999f);
                 for(size_t j = 0; j < 3; j++){
                     float randy_color[3] = {
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f),
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f),
-                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.9f, 1.0f)
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f),
+                        std::clamp((float(std::rand())/float((RAND_MAX)) * 1.0f), 0.2f, 1.0f)
                     };
                     float randy_pos[2] = {
                         std::clamp((float(std::rand())/float((RAND_MAX)) * 2.0f) - 1.0f, -1.0f, 1.0f),
@@ -230,10 +230,10 @@ class App{
                         {0.0f, 1.0f},
                         {1.0f, 1.0f}
                     };
-                    shard::gfx::Vertex v;
-                    v.pos = { randy_pos[0], randy_pos[1], randy_depth };
+                    shard::gfx::Vertex2D v;
+                    v.pos = { randy_pos[0], randy_pos[1]};
                     v.uv = uvs[j];
-                    v.color = { randy_color[0], randy_color[1], randy_color[2]  };
+                    v.color = { randy_color[0], randy_color[1], randy_color[2], 1.0f};
                     triVertices[i+j] = v;
                 }
             }
@@ -339,7 +339,9 @@ class App{
 
         }
         void render(){
-            if(VkCommandBuffer commandBuffer = gfx.beginRenderPass()){
+            if(VkCommandBuffer commandBuffer = gfx.beginRenderPass(
+                shard::gfx::Color(44.0f, 44.0f, 44.0f)
+            )){
                 AppUbo ubo = {};
                 ubo.proj = glm::ortho(
                     -1.0f, 1.0f, -1.0f, 1.0f,
@@ -352,7 +354,7 @@ class App{
                 ubo.model = glm::rotate(
                     ubo.model, glm::radians(triRot), {0.0f, 0.0f, 1.0f}
                 );
-                ubo.model = glm::scale(ubo.model, {0.5f, 0.5f, 1.0f});
+                ubo.model = glm::scale(ubo.model, {1.5f, 1.5f, 1.5f});
 
                 memcpy(
                     uniformBuffers[gfx.frameIndex()].mappedMemory(),

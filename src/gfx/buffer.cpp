@@ -123,9 +123,11 @@ namespace shard{
                     nullptr
                 ) == VK_SUCCESS
             );
-            map();
-            if(data){
-                memcpy(_mapped, data, _size);
+            if(memProps & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT){
+                map();
+                if(data){
+                    memcpy(_mapped, data, _size);
+                }
             }
         }
     }

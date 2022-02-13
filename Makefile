@@ -1,3 +1,5 @@
+include examples.mk
+
 LIBSHARD = libshard.a
 
 CC = g++
@@ -11,10 +13,6 @@ OBJ = $(SRC:%.cpp=%.o)
 SHADER_SPV = $(SHADERS:%=%.spv)
 
 OUT = out
-
-MODERN_ART_EXAMPLE = examples/modern_art.cpp
-MONKEY_EXAMPLE = examples/monkey.cpp
-CURRENT_EXAMPLE = $(MONKEY_EXAMPLE)
 
 .PHONY: all clean cleanobj cleanspv run libs
 
