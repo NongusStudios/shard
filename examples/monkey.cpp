@@ -5,57 +5,12 @@
 #include <ctime>
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
-
-struct MonkeyVertex{
-    glm::vec3 pos;
-    glm::vec2 uv;
-    glm::vec3 normal;
-    glm::vec3 color;
-    
-    bool operator == (const MonkeyVertex& v) const {
-        return pos == v.pos && uv == v.uv && normal == v.normal && color == v.color;
-    }
-
-    static VkVertexInputBindingDescription bindingDesc(){
-        VkVertexInputBindingDescription binding = {};
-        binding.binding = 0;
-        binding.stride = sizeof(MonkeyVertex);
-        binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return binding;
-    }
-
-    static std::vector<VkVertexInputAttributeDescription> attributeDescs(){
-        std::vector<VkVertexInputAttributeDescription> attrs(4);
-
-        attrs[0].binding = 0;
-        attrs[0].location = 0;
-        attrs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attrs[0].offset = offsetof(MonkeyVertex, pos);
-        
-        attrs[1].binding = 0;
-        attrs[1].location = 1;
-        attrs[1].format = VK_FORMAT_R32G32_SFLOAT;
-        attrs[1].offset = offsetof(MonkeyVertex, uv);
-
-        attrs[2].binding = 0;
-        attrs[2].location = 2;
-        attrs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attrs[2].offset = offsetof(MonkeyVertex, normal);
-
-        attrs[3].binding = 0;
-        attrs[3].location = 3;
-        attrs[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attrs[3].offset = offsetof(MonkeyVertex, color);
-
-        return attrs;
-    }
-};
+#include "lib/tiny_obj_loader.h"
 
 namespace std {
     template <>
-    struct hash<MonkeyVertex> {
-        size_t operator()(MonkeyVertex const &vertex) const {
+    struct hash<shard::gfx::Vertex3D> {
+        size_t operator()(shard::gfx::Vertex3D const &vertex) const {
             size_t seed = 5381;
             uint8_t bytes[sizeof(vertex)];
             memcpy(bytes, &vertex, sizeof(bytes));
@@ -67,11 +22,11 @@ namespace std {
     };
 }  // namespace std
 
-struct Model{
-    std::vector<MonkeyVertex> vertices;
+struct ModelLoader{
+    std::vector<shard::gfx::Vertex3D> vertices;
     std::vector<uint32_t> indices;
 
-    Model(const char* filePath){
+    ModelLoader(const char* filePath){
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
@@ -84,10 +39,10 @@ struct Model{
         vertices.clear();
         indices.clear();
 
-        std::unordered_map<MonkeyVertex, uint32_t> uniqueVertices = {};
+        std::unordered_map<shard::gfx::Vertex3D, uint32_t> uniqueVertices = {};
         for (const auto &shape : shapes) {
             for (const auto &index : shape.mesh.indices) {
-            MonkeyVertex vertex{};
+            shard::gfx::Vertex3D vertex{};
 
             if (index.vertex_index >= 0) {
                 vertex.pos = {
@@ -144,7 +99,7 @@ class Monkey{
         Monkey():
             window{createWindow(800, 600)},
             input{window},
-            gfx{window},
+            gfx{window, true},
             descPool{
                 shard::gfx::DescriptorPool::Builder(gfx.device())
                     .setMaxSets(shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT)
@@ -169,25 +124,18 @@ class Monkey{
             pipeline{
                 gfx.createPipeline(
                     pLayout,
-                    "examples/monkey.vert.spv",
-                    "examples/monkey.frag.spv",
-                    {MonkeyVertex::bindingDesc()},
-                    MonkeyVertex::attributeDescs(),
+                    "examples/shaders/monkey.vert.spv",
+                    "examples/shaders/monkey.frag.spv",
+                    {shard::gfx::Vertex3D::bindingDesc()},
+                    shard::gfx::Vertex3D::attributeDescs(),
                     config.config
                 )
             },
-            monkey{"examples/models/monkey.obj"},
-            vBuffer{
-                gfx.createVertexBuffer(
-                    monkey.vertices.size()*sizeof(MonkeyVertex),
-                    monkey.vertices.data()
-                )
-            },
-            iBuffer{
-                gfx.createIndexBuffer(
-                    monkey.indices.size()*sizeof(uint32_t),
-                    monkey.indices.data()
-                )
+            monkeyData{"examples/models/monkey.obj"},
+            monkeyModel{
+                gfx,
+                monkeyData.vertices,
+                monkeyData.indices
             }
         {
             std::srand((uint32_t)std::time(NULL));
@@ -268,12 +216,9 @@ class Monkey{
                 );
 
                 pipeline.bind(commandBuffer);
-                vBuffer.bindVertex(commandBuffer);
-                iBuffer.bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
-                vkCmdDrawIndexed(
-                    commandBuffer, monkey.indices.size(),
-                    1, 0, 0, 0
-                );
+                monkeyModel.bind(commandBuffer);
+                monkeyModel.draw(commandBuffer);
+
                 gfx.endRenderPass();
             }
         }
@@ -329,9 +274,8 @@ class Monkey{
         VkPipelineLayout pLayout;
         MonkeyConfig config;
         shard::gfx::Pipeline pipeline;
-        Model monkey;
-        shard::gfx::Buffer vBuffer;
-        shard::gfx::Buffer iBuffer;
+        ModelLoader monkeyData;
+        shard::gfx::Model monkeyModel;
         std::vector<shard::gfx::Buffer> uBuffers;
         std::vector<VkDescriptorSet> descSets;
         
