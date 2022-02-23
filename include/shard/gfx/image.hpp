@@ -30,7 +30,7 @@ namespace shard{
                 Sampler& operator = (Sampler&& s);
 
                 VkSampler sampler() { return _sampler; }
-                bool valid() { return _sampler != VK_NULL_HANDLE; }
+                bool valid() const { return _sampler != VK_NULL_HANDLE; }
             private:
                 Device& device;
                 VkSampler _sampler = VK_NULL_HANDLE;
@@ -40,8 +40,10 @@ namespace shard{
             public:
                 Image(Device& _device): device{_device} {}
                 Image(Device& _device, const char* filePath);
+                // Pixel data must be 8bit RGBA
+                Image(Device& _device, uint32_t w, uint32_t h, const void* pixels);
                 Image(Device& _device,
-                    uint32_t w, uint32_t h, uint32_t mipLevels,
+                    uint32_t w, uint32_t h, uint32_t mipLevels, uint32_t pixelByteSize,
                     VkFormat __format, VkImageTiling tiling,
                     VkSampleCountFlagBits samples,
                     VkImageUsageFlags usage,
@@ -61,7 +63,7 @@ namespace shard{
                 VkImage image() { return _image; }
                 VkImageView imageView() { return _imageView; }
                 VmaAllocation allocation() { return _allocation; }
-                bool valid(){
+                bool valid() const {
                     return _image      != VK_NULL_HANDLE &&
                            _imageView  != VK_NULL_HANDLE &&
                            _allocation != VK_NULL_HANDLE

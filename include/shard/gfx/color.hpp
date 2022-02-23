@@ -22,6 +22,13 @@ namespace shard{
                 a{_a}
             {}
 
+            bool operator == (const Color& c) const {
+                return r == c.r &&
+                       g == c.g &&
+                       b == c.b &&
+                       a == c.a;
+            }
+
             float r, g, b, a;
         };
     }

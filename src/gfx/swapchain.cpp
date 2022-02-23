@@ -4,15 +4,17 @@
 
 namespace shard{
     namespace gfx{
-        Swapchain::Swapchain(Device& refDevice, VkExtent2D winExtent):
+        Swapchain::Swapchain(Device& refDevice, VkExtent2D winExtent, bool vsync):
+            VSYNC{vsync},
             device{refDevice},
             windowExtent{windowExtent}
         {
             init();
         }
         Swapchain::Swapchain(
-            Device& refDevice, VkExtent2D winExtent, std::shared_ptr<Swapchain> previous
+            Device& refDevice, VkExtent2D winExtent, bool vsync, std::shared_ptr<Swapchain> previous
         ):
+            VSYNC{vsync},
             device{refDevice},
             windowExtent{windowExtent},
             oldSwapchain{previous}

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
+
 #include "../gfx/gfx.hpp"
+#include "textureLoader.hpp"
 
 namespace shard{
     namespace r2d{
@@ -46,24 +49,45 @@ namespace shard{
                 glm::vec2 _scale;
                 gfx::Color _color;
         };
-    }
+        class Circle{
+            public:
+                static const gfx::Vertex2D VERTICES[4];
+                static const uint32_t INDICES[6];
 
-    class Renderer2D{
-        public:
-            Renderer2D(GLFWwindow* _window, VkExtent2D _renderRes);
-            ~Renderer2D();
+                Circle():
+                    _pos{0.0f},
+                    _scale{0.0f},
+                    _color{}
+                {}
+                Circle(
+                    const glm::vec2& pos_,
+                    const glm::vec2& scale_,
+                    const gfx::Color& color_
+                ):
+                    _pos{pos_},
+                    _scale{scale_},
+                    _color{color_}
+                {}
 
-            bool begin(const gfx::Color& color);
-            void present();
-        private:
-            GLFWwindow* window;
-            VkExtent2D renderRes;
-            gfx::Graphics gfx;
-            gfx::Buffer rectVertexBuffer;
-            gfx::Buffer rectIndexBuffer;
+                const glm::vec2&  pos()   const { return _pos;   }
+                const glm::vec2&  scale() const { return _scale; }
+                const gfx::Color& color() const { return _color; }
+                glm::vec2&        pos()         { return _pos;   }
+                glm::vec2&        scale()       { return _scale; }
+                gfx::Color&       color()       { return _color; }
+            private:
+                glm::vec2 _pos;
+                glm::vec2 _scale;
+                gfx::Color _color;
+        };
 
-            VkCommandBuffer currentCommandBuffer;
-    };
+        class Renderer{
+            public:
+
+            private:
+                
+        };
+    } // namespace r2d
 } // namespace shard
 
 /**

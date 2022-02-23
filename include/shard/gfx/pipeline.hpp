@@ -61,7 +61,7 @@ namespace shard{
                     return *this;
                 }
 
-                bool valid() { return _shaderModule != VK_NULL_HANDLE; }
+                bool valid() const { return _shaderModule != VK_NULL_HANDLE; }
 
                 VkShaderModule shaderModule() { return _shaderModule; }
             private:
@@ -114,7 +114,6 @@ namespace shard{
 
                 Pipeline& operator = (Pipeline& p){
                     assert(&device == &p.device);
-                    device.waitIdle();
                     vkDestroyPipeline(device.device(), _pipeline, nullptr);
                     _pipeline = p._pipeline;
                     p._pipeline = VK_NULL_HANDLE;
@@ -122,14 +121,13 @@ namespace shard{
                 }
                 Pipeline& operator = (Pipeline&& p){
                     assert(&device == &p.device);
-                    device.waitIdle();
                     vkDestroyPipeline(device.device(), _pipeline, nullptr);
                     _pipeline = p._pipeline;
                     p._pipeline = VK_NULL_HANDLE;
                     return *this;
                 }
 
-                bool valid() { return _pipeline != VK_NULL_HANDLE; }
+                bool valid() const { return _pipeline != VK_NULL_HANDLE; }
 
                 void bind(VkCommandBuffer commandBuffer){
                     assert(commandBuffer != VK_NULL_HANDLE);

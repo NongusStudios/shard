@@ -1,4 +1,5 @@
 #include "gfx/gfx.hpp"
+#include "gfx/model.hpp"
 #include "time/time.hpp"
 #include "input/input.hpp"
 

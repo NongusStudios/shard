@@ -15,7 +15,7 @@ namespace shard{
 
             *this = Image(
                 device, 
-                uint32_t(w), uint32_t(h), 1,
+                uint32_t(w), uint32_t(h), 1, 4,
                 VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
                 VK_SAMPLE_COUNT_1_BIT,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -27,8 +27,20 @@ namespace shard{
 
             stbi_image_free(pixels);
         }
+        Image::Image(Device& _device, uint32_t w, uint32_t h, const void* pixels):
+            Image(
+                _device, w, h, 1, 4,
+                VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                0,
+                VMA_MEMORY_USAGE_GPU_ONLY,
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                pixels
+            )
+        {}
         Image::Image(Device& _device,
-            uint32_t w, uint32_t h, uint32_t mipLevels,
+            uint32_t w, uint32_t h, uint32_t mipLevels, uint32_t pixelByteSize,
             VkFormat __format, VkImageTiling _tiling,
             VkSampleCountFlagBits samples,
             VkImageUsageFlags usage,
@@ -47,7 +59,7 @@ namespace shard{
             Buffer stagingBuffer = Buffer(device);
             if(pixels){
                 stagingBuffer = Buffer(
-                    device, size_t(w*h*4),
+                    device, size_t(w*h*pixelByteSize),
                     pixels,
                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                     VMA_MEMORY_USAGE_CPU_ONLY,

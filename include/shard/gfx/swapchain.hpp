@@ -10,10 +10,10 @@ namespace shard{
         class Swapchain{
             public:
                 static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-                static constexpr bool VSYNC = true;
+                const bool VSYNC;
 
-                Swapchain(Device& refDevice, VkExtent2D winExtent);
-                Swapchain(Device& refDevice, VkExtent2D winExtent, std::shared_ptr<Swapchain> previous);
+                Swapchain(Device& refDevice, VkExtent2D winExtent, bool vsync);
+                Swapchain(Device& refDevice, VkExtent2D winExtent, bool vsync, std::shared_ptr<Swapchain> previous);
                 ~Swapchain();
 
                 shard_delete_copy_constructors(Swapchain);

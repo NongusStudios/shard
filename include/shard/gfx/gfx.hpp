@@ -22,8 +22,10 @@ namespace shard{
     namespace gfx{
         class Graphics{
             public:
-                Graphics(GLFWwindow* win);
+                Graphics(GLFWwindow* win, bool vsync);
                 ~Graphics();
+
+                shard_delete_copy_constructors(Graphics);
 
                 GLFWwindow* window() { return _window; }
 
@@ -79,6 +81,7 @@ namespace shard{
 
                 void destroyCommandBuffers();
 
+                const bool VSYNC;
                 GLFWwindow* _window;
                 PipelineConfigInfo _defaultPipelineConfig;
                 std::unique_ptr<Device> _device;

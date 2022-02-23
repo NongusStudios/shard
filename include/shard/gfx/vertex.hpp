@@ -19,7 +19,7 @@ namespace shard{
         struct Vertex2D{
             glm::vec2 pos;
             glm::vec2 uv;
-            Color color;
+            Color     color;
 
             Vertex2D():
                 pos{0.0f},
@@ -36,6 +36,11 @@ namespace shard{
                 color{_color}
             {}
 
+            bool operator == (const Vertex2D& v) const {
+                return pos   == v.pos &&
+                       uv    == v.uv  &&
+                       color == v.color;
+            }
 
             static VkVertexInputBindingDescription bindingDesc(){
                 VkVertexInputBindingDescription binding = {};
@@ -70,7 +75,7 @@ namespace shard{
             glm::vec3 pos;
             glm::vec2 uv;
             glm::vec3 normal;
-            Color color;
+            Color     color;
 
             Vertex3D():
                 pos{0.0f},
@@ -89,6 +94,13 @@ namespace shard{
                 normal{_normal},
                 color{_color}
             {}
+
+            bool operator == (const Vertex3D& v) const {
+                return pos    == v.pos    &&
+                       uv     == v.uv     &&
+                       normal == v.normal &&
+                       color  == v.color;
+            }
 
             static VkVertexInputBindingDescription bindingDesc(){
                 VkVertexInputBindingDescription binding = {};

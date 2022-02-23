@@ -57,7 +57,7 @@ namespace shard{
                 DescriptorSetLayout& operator = (DescriptorSetLayout&& dsl);
 
                 VkDescriptorSetLayout layout() { return _layout; }
-                bool valid() { return _layout != VK_NULL_HANDLE; }
+                bool valid() const { return _layout != VK_NULL_HANDLE; }
             private:
                 Device& device;
                 VkDescriptorSetLayout _layout;
@@ -120,7 +120,11 @@ namespace shard{
                 DescriptorPool& operator = (DescriptorPool&& dp);
 
                 VkDescriptorPool pool() { return _pool; }
-                bool valid() { return _pool != VK_NULL_HANDLE; }
+                uint32_t getSizeCount(VkDescriptorType type){
+                    assert(sizeCounts.contains(type));
+                    return sizeCounts[type];
+                }
+                bool valid() const { return _pool != VK_NULL_HANDLE; }
 
                 void allocateDescriptor(
                     VkDescriptorSetLayout layout,
@@ -137,6 +141,7 @@ namespace shard{
             private:
                 Device& device;
                 VkDescriptorPool _pool;
+                std::map<VkDescriptorType, uint32_t> sizeCounts;
 
                 friend class DescriptorWriter;
         };

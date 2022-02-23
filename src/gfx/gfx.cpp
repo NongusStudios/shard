@@ -2,14 +2,15 @@
 
 namespace shard{
     namespace gfx{
-        Graphics::Graphics(GLFWwindow* win):
+        Graphics::Graphics(GLFWwindow* win, bool vsync):
+            VSYNC{vsync},
             _window{win},
             _defaultPipelineConfig{}
         {
             assert(_window != nullptr);
 
             _device = std::make_unique<Device>(_window);
-            _swapchain = std::make_unique<Swapchain>(*_device, getFramebufferExtent(_window));
+            _swapchain = std::make_unique<Swapchain>(*_device, getFramebufferExtent(_window), VSYNC);
             _defaultPipelineConfig.makeDefault();
             createCommandBuffers();
             createEmptyPipelineLayout();
@@ -28,7 +29,7 @@ namespace shard{
             _device->waitIdle();
 
             std::shared_ptr<Swapchain> oldSwapchain = std::move(_swapchain);
-            _swapchain = std::make_unique<Swapchain>(*_device, extent, oldSwapchain);
+            _swapchain = std::make_unique<Swapchain>(*_device, extent, VSYNC, oldSwapchain);
         }
         void Graphics::createCommandBuffers(){
             commandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
@@ -94,22 +95,40 @@ namespace shard{
             );
         }
         Buffer Graphics::createVertexBuffer(size_t size, const void* data){
-            return Buffer(
-                device(), 
-                size, data,
-                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                VMA_MEMORY_USAGE_CPU_TO_GPU,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-            );
-        }
-        Buffer Graphics::createIndexBuffer(size_t size, const void* data){
-            return Buffer(
+            Buffer stagingBuffer = Buffer(
                 device(),
                 size, data,
-                VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                VMA_MEMORY_USAGE_CPU_TO_GPU,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VMA_MEMORY_USAGE_CPU_ONLY,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
             );
+            Buffer vBuf = Buffer(
+                device(),
+                size,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VMA_MEMORY_USAGE_GPU_ONLY,
+                0
+            );
+            device().copyBuffer(stagingBuffer.buffer(), vBuf.buffer(), size);
+            return vBuf;
+        }
+        Buffer Graphics::createIndexBuffer(size_t size, const void* data){
+            Buffer stagingBuffer = Buffer(
+                device(),
+                size, data,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VMA_MEMORY_USAGE_CPU_ONLY,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+            );
+            Buffer iBuf = Buffer(
+                device(),
+                size,
+                VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VMA_MEMORY_USAGE_GPU_ONLY,
+                0
+            );
+            device().copyBuffer(stagingBuffer.buffer(), iBuf.buffer(), size);
+            return iBuf;
         }
         Buffer Graphics::createUniformBuffer(size_t size, const void* data){
             return Buffer(

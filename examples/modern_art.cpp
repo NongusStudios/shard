@@ -90,7 +90,7 @@ class App{
     public:
         App():
             window{createWindow()},
-            gfx{window},
+            gfx{window, true},
             descPool{
                 shard::gfx::DescriptorPool::Builder(gfx.device())
                     .setMaxSets(shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT)
@@ -100,11 +100,7 @@ class App{
                     )
                     .addPoolSize(
                         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
-                    )
-                    .addPoolSize(
-                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                        shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
+                        2*shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
                     )
                     .build()
             },
@@ -130,8 +126,8 @@ class App{
             triPipeline{
                 gfx.createPipeline(
                     triPipelineLayout,
-                    "examples/tri.vert.spv",
-                    "examples/tri.frag.spv",
+                    "examples/shaders/tri.vert.spv",
+                    "examples/shaders/tri.frag.spv",
                     {shard::gfx::Vertex2D::bindingDesc()},
                     shard::gfx::Vertex2D::attributeDescs(),
                     gfx.deafultPipelineConfig()

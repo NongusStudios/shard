@@ -94,6 +94,11 @@ namespace shard{
                     &_pool
                 ) == VK_SUCCESS
             );
+
+            for(const auto& size : sizes){
+                if(!sizeCounts.contains(size.type)) sizeCounts[size.type] = 0;
+                sizeCounts[size.type] += size.descriptorCount;
+            }
         }
         DescriptorPool::DescriptorPool(DescriptorPool& dp):
             device{dp.device},

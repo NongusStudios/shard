@@ -63,7 +63,7 @@ namespace shard{
                 }
                 VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
-                bool valid(){
+                bool valid() const {
                     return
                         _allocation != VK_NULL_HANDLE &&
                         _buffer     != VK_NULL_HANDLE
