@@ -3,7 +3,7 @@ include examples.mk
 LIBSHARD = libshard.a
 
 CC = g++
-FLAGS = -O0 -g -Wfatal-errors -Wall -pedantic -std=c++20 -Iinclude -Ilib/glfw/include -Ilib/glm -Ilib/vma/include -Ilib/stb
+FLAGS = -O0 -g -Wfatal-errors -Wall -pedantic -std=c++20 -Iinclude -Ilib/glfw/include -Ilib/glm -Ilib/vma/include -Ilib/stb -Ilib
 LINKER = -lvulkan -lpthread -ldl lib/glfw/build/src/libglfw3.a
 
 SRC  = $(wildcard src/*.cpp) $(wildcard src/**/*.cpp) $(wildcard src/**/**/*.cpp) $(wildcard src/**/**/**/*.cpp)
