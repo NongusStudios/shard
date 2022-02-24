@@ -24,7 +24,8 @@ namespace shard{
         VkSamplerAddressMode W,
         VkBool32 anisotropy,
         VkBorderColor bColor,
-        VkSamplerMipmapMode mipMode
+        VkSamplerMipmapMode mipMode,
+        uint32_t mipLevels
     ){
         samplers[currentSamplerName] = std::make_unique<gfx::Sampler>(
             device, 
@@ -32,7 +33,8 @@ namespace shard{
             U, V, W,
             anisotropy,
             bColor,
-            mipMode
+            mipMode,
+            mipLevels
         );
         return (currentSamplerName == UINT32_MAX)
             ? currentSamplerName

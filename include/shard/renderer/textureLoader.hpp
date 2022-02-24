@@ -18,7 +18,8 @@ namespace shard{
                 VkSamplerAddressMode W,
                 VkBool32 anisotropy,
                 VkBorderColor bColor,
-                VkSamplerMipmapMode mipMode
+                VkSamplerMipmapMode mipMode,
+                uint32_t mipLevels
             );
             uint32_t addTexture(
                 const uint32_t& layout, const uint32_t& sampler,
