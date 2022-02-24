@@ -97,6 +97,7 @@ namespace shard{
 
                 // Helper
                 bool isDeviceSuitable(VkPhysicalDevice device);
+                uint32_t rateDevice(VkPhysicalDevice device);
                 std::vector<const char *> getRequiredExtensions();
                 bool checkValidationLayerSupport();
                 bool checkGlfwRequiredExtensionSupport(const std::vector<const char*>& exts);

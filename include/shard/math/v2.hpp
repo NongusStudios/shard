@@ -1,5 +1,13 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#pragma once
+
+namespace shard{
+    namespace math{
+        template<typename T>
+        class v2{
+            
+        };
+    }
+}
 
 /**
     Copyright 2022 Nongus Studios (https://github.com/NongusStudios/shard)

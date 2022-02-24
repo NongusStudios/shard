@@ -51,7 +51,8 @@ namespace shard{
         ):
             device{_device},
             _extent{w, h},
-            _format{__format}
+            _format{__format},
+            _mipLevels{mipLevels}
         {
             assert(w*h > 0);
 
@@ -99,7 +100,7 @@ namespace shard{
             if(pixels){
                 transition(
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    mipLevels, VK_IMAGE_ASPECT_COLOR_BIT
+                    mipLevels, aspectMask
                 );
                 device.copyBufferToImage(
                     stagingBuffer.buffer(), _image,
@@ -107,8 +108,9 @@ namespace shard{
                 );
                 transition(
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                    mipLevels, VK_IMAGE_ASPECT_COLOR_BIT
+                    mipLevels, aspectMask
                 );
+                //genMipMaps(_format, _extent.width, _extent.height, mipLevels);
             }
 
             VkImageViewCreateInfo imageViewInfo = {};
@@ -133,6 +135,7 @@ namespace shard{
             device{i.device},
             _extent{i._extent},
             _format{i._format},
+            _mipLevels{i._mipLevels},
             _image{i._image},
             _imageView{i._imageView},
             _allocation{i._allocation},
@@ -141,6 +144,7 @@ namespace shard{
             assert(i.valid());
             i._extent = {};
             i._format = VK_FORMAT_UNDEFINED;
+            i._mipLevels = 0;
             i._image = VK_NULL_HANDLE;
             i._imageView = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -150,6 +154,7 @@ namespace shard{
             device{i.device},
             _extent{i._extent},
             _format{i._format},
+            _mipLevels{i._mipLevels},
             _image{i._image},
             _imageView{i._imageView},
             _allocation{i._allocation},
@@ -158,12 +163,101 @@ namespace shard{
             assert(i.valid());
             i._extent = {};
             i._format = VK_FORMAT_UNDEFINED;
+            i._mipLevels = 0;
             i._image = VK_NULL_HANDLE;
             i._imageView = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
             i.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         }
 
+        void Image::genMipMaps(VkFormat imageFormat,
+            int32_t texWidth, int32_t texHeight, uint32_t mipLevels
+        ){
+            // Check if image format supports linear blitting
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(device.pDevice(), imageFormat, &formatProperties);
+
+            shard_abort_ifnot(
+                formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
+            );
+
+            VkCommandBuffer commandBuffer = device.beginSingleTimeCommands();
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = _image;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+
+            int32_t mipWidth = texWidth;
+            int32_t mipHeight = texHeight;
+
+            for (uint32_t i = 1; i < mipLevels; i++) {
+                barrier.subresourceRange.baseMipLevel = i - 1;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+                vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+
+                VkImageBlit blit{};
+                blit.srcOffsets[0] = {0, 0, 0};
+                blit.srcOffsets[1] = {mipWidth, mipHeight, 1};
+                blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                blit.srcSubresource.mipLevel = i - 1;
+                blit.srcSubresource.baseArrayLayer = 0;
+                blit.srcSubresource.layerCount = 1;
+                blit.dstOffsets[0] = {0, 0, 0};
+                blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+                blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                blit.dstSubresource.mipLevel = i;
+                blit.dstSubresource.baseArrayLayer = 0;
+                blit.dstSubresource.layerCount = 1;
+
+                vkCmdBlitImage(commandBuffer,
+                    _image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1, &blit,
+                    VK_FILTER_LINEAR);
+
+                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+
+                if (mipWidth > 1) mipWidth /= 2;
+                if (mipHeight > 1) mipHeight /= 2;
+            }
+
+            barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(commandBuffer,
+                VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+
+            device.endSingleTimeCommands(commandBuffer);
+        }
         void Image::cleanup(){
             vkDestroyImageView(device.device(), _imageView, nullptr);
             vmaDestroyImage(device.allocator(), _image, _allocation);
@@ -176,6 +270,7 @@ namespace shard{
             cleanup();
             _extent     = i._extent;
             _format     = i._format;
+            _mipLevels  = i._mipLevels;
             _image      = i._image;
             _imageView  = i._imageView;
             _allocation = i._allocation;
@@ -183,6 +278,7 @@ namespace shard{
 
             i._extent     = {};
             i._format     = VK_FORMAT_UNDEFINED;
+            i._mipLevels  = 0;
             i._image      = VK_NULL_HANDLE;
             i._imageView  = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -195,6 +291,7 @@ namespace shard{
             cleanup();
             _extent     = i._extent;
             _format     = i._format;
+            _mipLevels  = i._mipLevels;
             _image      = i._image;
             _imageView  = i._imageView;
             _allocation = i._allocation;
@@ -202,6 +299,7 @@ namespace shard{
 
             i._extent     = {};
             i._format     = VK_FORMAT_UNDEFINED;
+            i._mipLevels  = 0;
             i._image      = VK_NULL_HANDLE;
             i._imageView  = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -218,7 +316,8 @@ namespace shard{
             VkSamplerAddressMode W,
             VkBool32 anisotropy,
             VkBorderColor bColor,
-            VkSamplerMipmapMode mipMode
+            VkSamplerMipmapMode mipMode,
+            uint32_t mipLevels
         ):
             device{_device}
         {
@@ -239,9 +338,9 @@ namespace shard{
             samplerInfo.compareEnable = VK_FALSE;
             samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
             samplerInfo.mipmapMode = mipMode;
+            samplerInfo.minLod = static_cast<float>(mipLevels)/4;
+            samplerInfo.maxLod = static_cast<float>(mipLevels);
             samplerInfo.mipLodBias = 0.0f;
-            samplerInfo.minLod = 0.0f;
-            samplerInfo.maxLod = 0.0f;
             
             shard_abort_ifnot(
                 vkCreateSampler(

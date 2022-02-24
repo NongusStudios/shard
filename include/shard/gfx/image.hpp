@@ -20,7 +20,8 @@ namespace shard{
                     VkSamplerAddressMode W,
                     VkBool32 anisotropy,
                     VkBorderColor bColor,
-                    VkSamplerMipmapMode mipMode
+                    VkSamplerMipmapMode mipMode,
+                    uint32_t mipLevels
                 );
                 Sampler(Sampler& s);
                 Sampler(Sampler&& s);
@@ -63,6 +64,7 @@ namespace shard{
                 VkImage image() { return _image; }
                 VkImageView imageView() { return _imageView; }
                 VmaAllocation allocation() { return _allocation; }
+                uint32_t mipMapLevels() { return _mipLevels; }
                 bool valid() const {
                     return _image      != VK_NULL_HANDLE &&
                            _imageView  != VK_NULL_HANDLE &&
@@ -88,11 +90,15 @@ namespace shard{
                     oldLayout = newLayout;
                 }
             private:
+                void genMipMaps(VkFormat imageFormat,
+                    int32_t texWidth, int32_t texHeight, uint32_t mipLevels
+                );
                 void cleanup();
 
                 Device& device;
                 VkExtent2D _extent = {};
                 VkFormat _format = VK_FORMAT_UNDEFINED;
+                uint32_t _mipLevels = 0;
                 VkImage _image = VK_NULL_HANDLE;
                 VkImageView _imageView = VK_NULL_HANDLE;
                 VmaAllocation _allocation = VK_NULL_HANDLE;

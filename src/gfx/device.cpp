@@ -138,18 +138,24 @@ namespace shard{
             std::vector<VkPhysicalDevice> devices(deviceCount);
             vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
+            uint32_t currentHighScore = 0;
+            uint32_t highestDeviceIndex = 0;
+            uint32_t i = 0;
             for(const auto& device : devices){
-                if(isDeviceSuitable(device)){
-                    _pDevice = device;
-                    break;
+                uint32_t score = rateDevice(device);
+                if(score > currentHighScore){
+                    currentHighScore = score;
+                    highestDeviceIndex = i;
                 }
+                i++;
             }
+            shard_abort_ifnot(currentHighScore > 0 && "No suitable physical device found!");
+            _pDevice = devices[highestDeviceIndex];
 
             shard_abort_ifnot(_pDevice != VK_NULL_HANDLE && "No suitable physical devices found!");
 
             if(shard::IS_DEBUG){
-                VkPhysicalDeviceProperties props;
-                vkGetPhysicalDeviceProperties(_pDevice, &props);
+                VkPhysicalDeviceProperties props = properties();
                 std::cout << "_pDevice: " << props.deviceName << "\n";
             }
         }
@@ -234,6 +240,20 @@ namespace shard{
 
             return indices.complete() && extensionsSupported && swapChainAdequate &&
                     supportedFeatures.samplerAnisotropy;
+        }
+        uint32_t Device::rateDevice(VkPhysicalDevice device){
+            if(!isDeviceSuitable(device)) return 0;
+
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(device, &props);
+
+            uint32_t score = 1;
+            if(props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU){
+                score += 1000;
+            }
+            score += props.limits.maxImageDimension2D;
+
+            return score;
         }
         std::vector<const char*> Device::getRequiredExtensions(){
             uint32_t glfwExtensionCount = 0;

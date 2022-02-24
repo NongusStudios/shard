@@ -36,7 +36,8 @@ class App{
         std::vector<shard::gfx::Buffer> uniformBuffers;
         shard::gfx::Image skylineImage;
         shard::gfx::Image faceImage;
-        shard::gfx::Sampler baseSampler;
+        shard::gfx::Sampler skylineSampler;
+        shard::gfx::Sampler faceSampler;
         shard::Input input;
         shard::Time time;
 
@@ -155,7 +156,7 @@ class App{
                 gfx.device(),
                 "res/face.jpg"
             },
-            baseSampler{
+            skylineSampler{
                 gfx.device(),
                 VK_FILTER_NEAREST,
                 VK_FILTER_NEAREST,
@@ -164,7 +165,20 @@ class App{
                 VK_SAMPLER_ADDRESS_MODE_REPEAT,
                 VK_TRUE,
                 VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-                VK_SAMPLER_MIPMAP_MODE_NEAREST
+                VK_SAMPLER_MIPMAP_MODE_LINEAR,
+                skylineImage.mipMapLevels()
+            },
+            faceSampler{
+                gfx.device(),
+                VK_FILTER_NEAREST,
+                VK_FILTER_NEAREST,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                VK_TRUE,
+                VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+                VK_SAMPLER_MIPMAP_MODE_LINEAR,
+                faceImage.mipMapLevels()
             },
             input{window}
         {
@@ -190,8 +204,8 @@ class App{
 
             for(size_t i = 0; i < descSets.size(); i++){
                 auto bufferInfo = uniformBuffers[i].descriptorInfo();
-                auto faceImageInfo = faceImage.descriptorInfo(baseSampler);
-                auto skylineImageInfo = skylineImage.descriptorInfo(baseSampler);
+                auto faceImageInfo = faceImage.descriptorInfo(faceSampler);
+                auto skylineImageInfo = skylineImage.descriptorInfo(skylineSampler);
                 
                 shard::gfx::DescriptorWriter(descLayout, descPool)
                     .writeBuffer(0, &bufferInfo)
