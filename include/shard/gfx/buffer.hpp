@@ -69,7 +69,7 @@ namespace shard{
                         _buffer     != VK_NULL_HANDLE
                     ;
                 }
-                size_t size(){  return _size; }
+                size_t size() {  return _size; }
                 VmaAllocation allocation() { return _allocation; }
                 VkBuffer buffer() { return _buffer; }
                 VkBufferUsageFlags usage() { return _usage; }

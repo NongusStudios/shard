@@ -90,9 +90,6 @@ namespace shard{
                     oldLayout = newLayout;
                 }
             private:
-                void genMipMaps(VkFormat imageFormat,
-                    int32_t texWidth, int32_t texHeight, uint32_t mipLevels
-                );
                 void cleanup();
 
                 Device& device;

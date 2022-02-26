@@ -56,36 +56,122 @@ namespace shard{
 
                 Circle():
                     _pos{0.0f},
-                    _scale{0.0f},
+                    _radius{1.0f},
                     _color{}
                 {}
                 Circle(
                     const glm::vec2& pos_,
-                    const glm::vec2& scale_,
+                    const float& radius_,
                     const gfx::Color& color_
                 ):
                     _pos{pos_},
-                    _scale{scale_},
+                    _radius{radius_},
                     _color{color_}
                 {}
 
-                const glm::vec2&  pos()   const { return _pos;   }
-                const glm::vec2&  scale() const { return _scale; }
-                const gfx::Color& color() const { return _color; }
-                glm::vec2&        pos()         { return _pos;   }
-                glm::vec2&        scale()       { return _scale; }
-                gfx::Color&       color()       { return _color; }
+                const glm::vec2&  pos()    const { return _pos;    }
+                const float&      radius() const { return _radius; }
+                const gfx::Color& color()  const { return _color;  }
+                glm::vec2&        pos()          { return _pos;    }
+                float&            radius()       { return _radius; }
+                gfx::Color&       color()        { return _color;  }
             private:
                 glm::vec2 _pos;
-                glm::vec2 _scale;
+                float _radius;
                 gfx::Color _color;
         };
 
         class Renderer{
             public:
+                class Builder{
+                    public:
+                        Builder(GLFWwindow* win):
+                            window{win},
+                            extent{getWindowExtent(window)},
+                            texturePoolSize{0},
+                            vsync{true}
+                        {}
+                        Builder& setExtent(const VkExtent2D& ext){
+                            extent = ext;
+                            return *this;
+                        }
+                        Builder& setTexturePoolSize(const uint32_t& texSz){
+                            texturePoolSize = texSz;
+                            return *this;
+                        }
+                        Builder& setVsync(const bool& _vsync){
+                            vsync = _vsync;
+                            return *this;
+                        }
+                        std::unique_ptr<Renderer> build(){
+                            return std::make_unique<Renderer>(
+                                window, extent, texturePoolSize, vsync
+                            );
+                        }
+                    private:
+                        GLFWwindow* window;
+                        VkExtent2D extent;
+                        uint32_t texturePoolSize;
+                        bool vsync;
+                };
 
+                Renderer(
+                    GLFWwindow* win,
+                    const VkExtent2D& extent_,
+                    const uint32_t& texturePoolSize,
+                    const bool& vsync
+                );
+                ~Renderer();
+
+                shard_delete_copy_constructors(Renderer);
+
+                bool beginRenderPass(const gfx::Color& color);
+                void endRenderPass();
+
+                Renderer& drawRect(const Rect& rect);
+                Renderer& drawRectWithBorder(
+                    const Rect& rect, const gfx::Color& borderColor, const float& borderSize
+                );
+
+                Renderer& drawCircle(const Circle& circle);
+                Renderer& drawCircleWithBorder(
+                    const Circle& circle, const gfx::Color& borderColor, const float& borderSize
+                );
+                Renderer& drawSprite(
+                    const Rect& srcRect, const Rect& rect, const uint32_t& texture
+                );
+                Renderer& drawSprite(const Circle& circle, const uint32_t& texture);
+
+                void waitIdle(){
+                    _gfx.device().waitIdle();
+                }
+
+                GLFWwindow* window(){
+                    return _window;
+                }
+                gfx::Graphics& gfx(){
+                    return _gfx;
+                }
+                gfx::DescriptorPool& descPool(){
+                    return _descPool;
+                }
+                TextureLoader& tLoader(){
+                    return _tLoader;
+                }
+                VkExtent2D extent() const {
+                    return _extent;
+                }
             private:
-                
+                GLFWwindow* _window;
+                gfx::Graphics _gfx;
+                gfx::DescriptorPool _descPool;
+                gfx::DescriptorSetLayout _uniformDescLayout;
+                gfx::DescriptorSetLayout _texDescLayout;
+                TextureLoader _tLoader;
+
+                VkExtent2D _extent;
+
+                VkCommandBuffer currentCommandBuffer;
         };
     } // namespace r2d
 } // namespace shard

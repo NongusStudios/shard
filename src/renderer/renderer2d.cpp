@@ -29,6 +29,57 @@ namespace shard{
             0, 1, 2,
             0, 3, 1
         };
+
+        Renderer::Renderer(
+            GLFWwindow* win,
+            const VkExtent2D& extent_,
+            const uint32_t& texturePoolSize,
+            const bool& vsync
+        ):
+            _window{win},
+            _gfx{_window, vsync},
+            _descPool{
+                gfx::DescriptorPool::Builder(_gfx.device())
+                    .addPoolSize(
+                        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        gfx::Swapchain::MAX_FRAMES_IN_FLIGHT
+                    )
+                    .addPoolSize(
+                        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        texturePoolSize
+                    )
+                    .setMaxSets(gfx::Swapchain::MAX_FRAMES_IN_FLIGHT)
+                    .build()
+            },
+            _uniformDescLayout{
+                gfx::DescriptorSetLayout::Builder(_gfx.device())
+                    .addBinding(
+                        0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                        VK_SHADER_STAGE_VERTEX_BIT
+                    )
+                    .build()
+            },
+            _texDescLayout{
+                gfx::DescriptorSetLayout::Builder(_gfx.device())
+                    .addBinding(
+                        0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        VK_SHADER_STAGE_FRAGMENT_BIT
+                    )
+                    .build()
+            },
+            _tLoader{_gfx.device(), _descPool},
+            _extent{extent_}
+        {}
+        Renderer::~Renderer(){}
+
+        bool Renderer::beginRenderPass(const gfx::Color& color){
+            if((currentCommandBuffer = _gfx.beginRenderPass(color)))
+                return true;
+            return false;
+        }
+        void Renderer::endRenderPass(){
+            _gfx.endRenderPass();
+        }
     } // namespace r2d
 } // namespace shard
 

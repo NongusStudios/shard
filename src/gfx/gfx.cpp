@@ -168,7 +168,7 @@ namespace shard{
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = _swapchain->renderPass();
-            renderPassInfo.framebuffer = _swapchain->getFrameBuffer(imageIndex);
+            renderPassInfo.framebuffer = _swapchain->getFrameBuffer(imageIndex).framebuffer();
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = _swapchain->swapchainExtent();
 

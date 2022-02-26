@@ -27,8 +27,13 @@ namespace shard{
             QueueFamilyIndices(VkPhysicalDevice device, VkSurfaceKHR surface);
 
             std::optional<uint32_t> graphics;
+            std::optional<uint32_t> compute;
             std::optional<uint32_t> present;
-            bool complete() { return graphics.has_value() && present.has_value(); }
+            bool complete() {
+                return graphics.has_value() &&
+                       compute. has_value() &&
+                       present. has_value();
+            }
         };
 
         class Device{
@@ -43,6 +48,7 @@ namespace shard{
                 VkDevice device() { return _device; }
                 VkSurfaceKHR surface() { return _surface; }
                 VkQueue graphicsQueue() { return _graphicsQueue; }
+                VkQueue computeQueue() { return _computeQueue; }
                 VkQueue presentQueue() { return _presentQueue; }
                 VkCommandPool commandPool() { return _commandPool; }
                 VkPhysicalDeviceProperties properties() {
@@ -67,13 +73,6 @@ namespace shard{
                 VkFormat findSupportedFormat(
                     const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                     VkFormatFeatureFlags features
-                );
-
-                void createImageWithInfo(
-                    const VkImageCreateInfo &imageInfo,
-                    VkMemoryPropertyFlags properties,
-                    VkImage &image,
-                    VkDeviceMemory &imageMemory
                 );
 
                 VkCommandBuffer beginSingleTimeCommands();
@@ -111,6 +110,7 @@ namespace shard{
                 VkDevice _device;
                 VkSurfaceKHR _surface;
                 VkQueue _graphicsQueue;
+                VkQueue _computeQueue;
                 VkQueue _presentQueue;
 
                 VmaAllocator _allocator;

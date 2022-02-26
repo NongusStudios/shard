@@ -129,10 +129,10 @@ namespace shard{
 
                 bool valid() const { return _pipeline != VK_NULL_HANDLE; }
 
-                void bind(VkCommandBuffer commandBuffer){
+                void bind(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint){
                     assert(commandBuffer != VK_NULL_HANDLE);
                     assert(valid());
-                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline);
+                    vkCmdBindPipeline(commandBuffer, bindPoint, _pipeline);
                 }
             private:
                 void init(

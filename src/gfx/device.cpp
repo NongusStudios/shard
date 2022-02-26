@@ -8,6 +8,7 @@ namespace shard{
         QueueFamilyIndices::QueueFamilyIndices(){}
         QueueFamilyIndices::QueueFamilyIndices(VkPhysicalDevice device, VkSurfaceKHR surface){
             assert(device != VK_NULL_HANDLE);
+            assert(surface != VK_NULL_HANDLE);
             uint32_t queueFamilyCount = 0;
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
@@ -18,6 +19,9 @@ namespace shard{
             for (const auto &queueFamily : queueFamilies){
                 if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT){
                     graphics = i;
+                }
+                if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT){
+                    compute = i;
                 }
                 VkBool32 presentSupport = false;
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
@@ -200,6 +204,7 @@ namespace shard{
             shard_abort_ifnot(vkCreateDevice(_pDevice, &createInfo, nullptr, &_device) == VK_SUCCESS);
 
             vkGetDeviceQueue(_device, indices.graphics.value(), 0, &_graphicsQueue);
+            vkGetDeviceQueue(_device, indices.compute.value(), 0, &_computeQueue);
             vkGetDeviceQueue(_device, indices.present.value(), 0, &_presentQueue);
         }
         void Device::createAllocator(){
@@ -360,31 +365,6 @@ namespace shard{
 
             std::cerr << SHARD_FUNC << "(): Failed to find supported format!\n";
             std::abort();
-        }
-        void Device::createImageWithInfo(
-            const VkImageCreateInfo &imageInfo,
-            VkMemoryPropertyFlags properties,
-            VkImage &image,
-            VkDeviceMemory &imageMemory
-        ){
-            shard_abort_ifnot(
-                vkCreateImage(_device, &imageInfo, nullptr, &image) == VK_SUCCESS
-            );
-
-            VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(_device, image, &memRequirements);
-
-            VkMemoryAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-            
-            shard_abort_ifnot(
-                vkAllocateMemory(_device, &allocInfo, nullptr, &imageMemory) == VK_SUCCESS
-            );
-            shard_abort_ifnot(
-                vkBindImageMemory(_device, image, imageMemory, 0) == VK_SUCCESS
-            );
         }
 
         VkCommandBuffer Device::beginSingleTimeCommands(){

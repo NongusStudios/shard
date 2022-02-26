@@ -381,7 +381,7 @@ class App{
                     0, nullptr
                 );
 
-                triPipeline.bind(commandBuffer);
+                triPipeline.bind(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
                 triVertexBuffer.bindVertex(commandBuffer);
                 vkCmdDraw(commandBuffer, static_cast<uint32_t>(triVertices.size()), 1, 0, 0);
                 gfx.endRenderPass();

@@ -136,7 +136,7 @@ class Monkey{
                     0, nullptr
                 );
 
-                pipeline.bind(commandBuffer);
+                pipeline.bind(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
                 monkeyModel.bind(commandBuffer);
                 monkeyModel.draw(commandBuffer);
 

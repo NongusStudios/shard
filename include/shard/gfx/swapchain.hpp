@@ -1,6 +1,8 @@
 #pragma once
 
 #include "device.hpp"
+#include "image.hpp"
+#include "framebuffer.hpp"
 #include "../utils.hpp"
 
 #include <memory>
@@ -18,7 +20,7 @@ namespace shard{
 
                 shard_delete_copy_constructors(Swapchain);
                 
-                VkFramebuffer getFrameBuffer(uint32_t index) { return swapchainFramebuffers[index]; }
+                Framebuffer& getFrameBuffer(uint32_t index) { return swapchainFramebuffers[index]; }
                 VkRenderPass renderPass() { return _renderPass; }
                 VkImageView getImageView(uint32_t index) { return swapchainImageViews[index]; }
                 size_t imageCount() { return swapchainImages.size(); }
@@ -57,12 +59,10 @@ namespace shard{
                 VkFormat swapchainDepthFormat;
                 VkExtent2D _swapchainExtent;
 
-                std::vector<VkFramebuffer> swapchainFramebuffers;
+                std::vector<Framebuffer> swapchainFramebuffers;
                 VkRenderPass _renderPass;
 
-                std::vector<VkImage> depthImages;
-                std::vector<VkDeviceMemory> depthImageMemorys;
-                std::vector<VkImageView> depthImageViews;
+                std::vector<Image> depthImages;
                 std::vector<VkImage> swapchainImages;
                 std::vector<VkImageView> swapchainImageViews;
 
