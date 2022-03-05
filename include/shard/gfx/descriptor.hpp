@@ -53,10 +53,13 @@ namespace shard{
                 DescriptorSetLayout(DescriptorSetLayout&& dsl);
                 ~DescriptorSetLayout();
 
+                shard_delete_copy_constructors(DescriptorSetLayout);
+
                 DescriptorSetLayout& operator = (DescriptorSetLayout& dsl);
                 DescriptorSetLayout& operator = (DescriptorSetLayout&& dsl);
 
                 VkDescriptorSetLayout layout() { return _layout; }
+                const VkDescriptorSetLayout layout() const { return _layout; }
                 bool valid() const { return _layout != VK_NULL_HANDLE; }
             private:
                 Device& device;
@@ -116,10 +119,13 @@ namespace shard{
                 DescriptorPool(DescriptorPool&& dp);
                 ~DescriptorPool();
 
+                shard_delete_copy_constructors(DescriptorPool);
+
                 DescriptorPool& operator = (DescriptorPool& dp);
                 DescriptorPool& operator = (DescriptorPool&& dp);
 
                 VkDescriptorPool pool() { return _pool; }
+                const VkDescriptorPool pool() const { return _pool; }
                 uint32_t getSizeCount(VkDescriptorType type){
                     assert(sizeCounts.contains(type));
                     return sizeCounts[type];

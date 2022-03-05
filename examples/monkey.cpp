@@ -47,7 +47,7 @@ class Monkey{
                     pLayout,
                     "examples/shaders/monkey.vert.spv",
                     "examples/shaders/monkey.frag.spv",
-                    {shard::gfx::Vertex3D::bindingDesc()},
+                    {shard::gfx::Vertex3D::bindingDesc(VK_VERTEX_INPUT_RATE_VERTEX)},
                     shard::gfx::Vertex3D::attributeDescs(),
                     config.config
                 )
@@ -107,7 +107,7 @@ class Monkey{
                 ubo.model = glm::mat4(1.0f);
                 ubo.model = glm::translate(ubo.model, {0.0f, 0.0f, -5.0f});
                 ubo.model = glm::rotate(ubo.model, rot, {0.0f, 1.0f, 0.0f});
-                ubo.model = glm::scale(ubo.model, {1.0f, 1.0f, 1.0f});
+                ubo.model = glm::scale(ubo.model, glm::vec3{1.0f, 1.0f, 1.0f}/1.2f);
 
                 auto mPos = shard::getCursorPos(window);
                 glm::vec3 normMousePos = glm::vec3(

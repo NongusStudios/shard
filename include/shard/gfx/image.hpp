@@ -56,15 +56,23 @@ namespace shard{
                 Image(Image& i);
                 Image(Image&& i);
                 ~Image();
+
+                shard_delete_copy_constructors(Image);
+
                 Image& operator = (Image& i);
                 Image& operator = (Image&& i);
 
-                VkExtent2D extent() { return _extent; }
-                VkFormat format() { return _format; }
+                VkExtent2D extent() const { return _extent; }
+                uint32_t pixelSize() const { return _pixelSize; }
+                VkFormat format() const { return _format; }
                 VkImage image() { return _image; }
+                const VkImage image() const { return _image; }
                 VkImageView imageView() { return _imageView; }
+                const VkImageView imageView() const { return _imageView; }
                 VmaAllocation allocation() { return _allocation; }
-                uint32_t mipMapLevels() { return _mipLevels; }
+                const VmaAllocation allocation() const { return _allocation; }
+                VkImageAspectFlags imageAspectMask() const { return _aspectMask; }
+                uint32_t mipMapLevels() const { return _mipLevels; }
                 bool valid() const {
                     return _image      != VK_NULL_HANDLE &&
                            _imageView  != VK_NULL_HANDLE &&
@@ -78,28 +86,29 @@ namespace shard{
                     info.sampler = sampler.sampler();
                     return info;
                 }
-                void transition(
-                    VkImageLayout newLayout, VkImageAspectFlags aspectMask,
-                    uint32_t mipLevels
-                ){
+
+                void transition(VkImageLayout newLayout){
                     device.transitionImageLayout(
                         _image, _format,
-                        mipLevels, aspectMask,
+                        _mipLevels, _aspectMask,
                         oldLayout, newLayout
                     );
                     oldLayout = newLayout;
                 }
+
+                void genMipMaps();
             private:
                 void cleanup();
 
                 Device& device;
                 VkExtent2D _extent = {};
                 VkFormat _format = VK_FORMAT_UNDEFINED;
+                uint32_t _pixelSize = 0;
                 uint32_t _mipLevels = 0;
+                VkImageAspectFlags _aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 VkImage _image = VK_NULL_HANDLE;
                 VkImageView _imageView = VK_NULL_HANDLE;
                 VmaAllocation _allocation = VK_NULL_HANDLE;
-
                 VkImageLayout oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         };
     } // namespace gfx

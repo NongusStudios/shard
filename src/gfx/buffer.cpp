@@ -33,7 +33,7 @@ namespace shard{
         Buffer::Buffer(Buffer& buf):
             device{buf.device}
         {
-            assert(buf.valid());
+            //assert(buf.valid());
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;
@@ -46,7 +46,7 @@ namespace shard{
         Buffer::Buffer(Buffer&& buf):
             device{buf.device}
         {
-            assert(buf.valid());
+            //assert(buf.valid());
             _allocation = buf._allocation;
             _buffer = buf._buffer;
             _usage = buf._usage;

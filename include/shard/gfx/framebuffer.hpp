@@ -27,12 +27,15 @@ namespace shard{
                 Framebuffer(Framebuffer&& fb);
                 ~Framebuffer();
 
+                shard_delete_copy_constructors(Framebuffer);
+
                 Framebuffer& operator = (Framebuffer& fb);
                 Framebuffer& operator = (Framebuffer&& fb);
 
                 VkFramebuffer framebuffer(){ return _framebuffer; }
-                VkExtent2D extent(){ return _extent; }
-                bool valid(){ return _framebuffer != VK_NULL_HANDLE; }
+                const VkFramebuffer framebuffer() const { return _framebuffer; }
+                VkExtent2D extent() const { return _extent; }
+                bool valid() const { return _framebuffer != VK_NULL_HANDLE; }
             private:
                 void createFramebuffer(
                     const std::vector<VkImageView>& attachments,

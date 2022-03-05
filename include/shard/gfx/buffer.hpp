@@ -32,6 +32,8 @@ namespace shard{
                 Buffer(Buffer&& buf);
                 ~Buffer();
 
+                shard_delete_copy_constructors(Buffer);
+
                 Buffer& operator = (Buffer& buf);
                 Buffer& operator = (Buffer&& buf);
 
@@ -69,12 +71,14 @@ namespace shard{
                         _buffer     != VK_NULL_HANDLE
                     ;
                 }
-                size_t size() {  return _size; }
+                size_t size() const {  return _size; }
                 VmaAllocation allocation() { return _allocation; }
                 VkBuffer buffer() { return _buffer; }
-                VkBufferUsageFlags usage() { return _usage; }
+                const VmaAllocation allocation() const { return _allocation; }
+                const VkBuffer buffer() const { return _buffer; }
+                VkBufferUsageFlags usage() const { return _usage; }
                 void* mappedMemory() { return _mapped; }
-                bool mapped() { return _mapped != nullptr; }
+                bool mapped() const { return _mapped != nullptr; }
                 static VkDeviceSize getAlignment(
                     VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment
                 ){

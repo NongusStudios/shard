@@ -129,7 +129,7 @@ class App{
                     triPipelineLayout,
                     "examples/shaders/tri.vert.spv",
                     "examples/shaders/tri.frag.spv",
-                    {shard::gfx::Vertex2D::bindingDesc()},
+                    {shard::gfx::Vertex2D::bindingDesc(VK_VERTEX_INPUT_RATE_VERTEX)},
                     shard::gfx::Vertex2D::attributeDescs(),
                     gfx.deafultPipelineConfig()
                 )

@@ -33,7 +33,7 @@ namespace shard{
             _layout{dsl._layout},
             bindings{dsl.bindings}
         {
-            assert(dsl.valid());
+            //assert(dsl.valid());
             dsl._layout = VK_NULL_HANDLE;
             dsl.bindings = {};
         }
@@ -42,7 +42,7 @@ namespace shard{
             _layout{dsl._layout},
             bindings{dsl.bindings}
         {
-            assert(dsl.valid());
+            //assert(dsl.valid());
             dsl._layout = VK_NULL_HANDLE;
             dsl.bindings = {};
         }
@@ -104,14 +104,14 @@ namespace shard{
             device{dp.device},
             _pool{dp._pool}
         {
-            assert(dp.valid());
+            //assert(dp.valid());
             dp._pool = VK_NULL_HANDLE;
         }
         DescriptorPool::DescriptorPool(DescriptorPool&& dp):
             device{dp.device},
             _pool{dp._pool}
         {
-            assert(dp.valid());
+            //assert(dp.valid());
             dp._pool = VK_NULL_HANDLE;
         }
         DescriptorPool::~DescriptorPool(){
@@ -142,7 +142,7 @@ namespace shard{
             allocInfo.descriptorPool = _pool;
             allocInfo.pSetLayouts = &layout;
             allocInfo.descriptorSetCount = 1;
-
+            
             shard_abort_ifnot(
                 vkAllocateDescriptorSets(
                     device.device(),

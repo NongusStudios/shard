@@ -1,177 +1,154 @@
 #pragma once
 
 #include <memory>
+#include <map>
 
 #include "../gfx/gfx.hpp"
-#include "textureLoader.hpp"
+#include "../gfx/model.hpp"
 
 namespace shard{
     namespace r2d{
         class Rect{
             public:
+                struct UBO {
+                    alignas(16) glm::mat4 model;
+                    alignas(16) gfx::Color color;
+                    alignas(16) gfx::Color borderColor;
+                    alignas(8)  glm::vec2 rectSize;
+                    alignas(4)  VkBool32 hasBorder;
+                    alignas(4)  float borderSize;
+                };
+                
                 static const gfx::Vertex2D VERTICES[4];
                 static const uint32_t INDICES[6];
+                static gfx::Model createRectModel(gfx::Graphics& gfx);
 
-                Rect():
-                    _pos{0.0f},
-                    _rot{0.0f},
-                    _scale{0.0f},
-                    _color{}
-                {}
+                Rect(){}
                 Rect(
-                    const glm::vec2& pos_,
-                    const float& rot_,
-                    const glm::vec2& scale_,
-                    const gfx::Color& color_
-                ):
-                    _pos{pos_},
-                    _rot{rot_},
-                    _scale{scale_},
-                    _color{color_}
-                {}
+                    gfx::Graphics& gfx,
+                    gfx::DescriptorPool& pool,
+                    gfx::DescriptorSetLayout& layout,
+                    const uint32_t binding,
+                    const glm::vec2& pos,
+                    const float rot,
+                    const glm::vec2& _scale,
+                    const gfx::Color& _color,
+                    const float _zindex,
+                    const bool _hasBorder=false,
+                    const float _borderSize=0.0f,
+                    const gfx::Color& _borderColor={0.0f}
+                );
 
-                Rect& setDeg(const float& deg){
-                    _rot = glm::radians(deg);
-                    return *this;
+                void bind(
+                    VkCommandBuffer commandBuffer,
+                    VkDescriptorSet constDescSet,
+                    VkPipelineLayout pLayout,
+                    uint32_t frameIndex
+                );
+                void rotationDegrees(float deg){
+                    rotation = glm::radians(deg);
                 }
 
-                const glm::vec2&  pos()   const { return _pos;   }
-                const float&      rot()   const { return _rot;   }
-                const glm::vec2&  scale() const { return _scale; }
-                const gfx::Color& color() const { return _color; }
-                glm::vec2&        pos()         { return _pos;   }
-                float&            rot()         { return _rot;   }
-                glm::vec2&        scale()       { return _scale; }
-                gfx::Color&       color()       { return _color; }
-            private:
-                glm::vec2 _pos;
-                float _rot;
-                glm::vec2 _scale;
-                gfx::Color _color;
-        };
-        class Circle{
-            public:
-                static const gfx::Vertex2D VERTICES[4];
-                static const uint32_t INDICES[6];
+                glm::mat4 modelMatrix();
 
-                Circle():
-                    _pos{0.0f},
-                    _radius{1.0f},
-                    _color{}
-                {}
-                Circle(
-                    const glm::vec2& pos_,
-                    const float& radius_,
-                    const gfx::Color& color_
-                ):
-                    _pos{pos_},
-                    _radius{radius_},
-                    _color{color_}
-                {}
-
-                const glm::vec2&  pos()    const { return _pos;    }
-                const float&      radius() const { return _radius; }
-                const gfx::Color& color()  const { return _color;  }
-                glm::vec2&        pos()          { return _pos;    }
-                float&            radius()       { return _radius; }
-                gfx::Color&       color()        { return _color;  }
+                glm::vec2  position;
+                float      rotation = 0.0f;
+                glm::vec2  scale;
+                gfx::Color color;
+                float      zindex = 0.0f;
+                bool       hasBorder = false;
+                float      borderSize = false;
+                gfx::Color borderColor;
             private:
-                glm::vec2 _pos;
-                float _radius;
-                gfx::Color _color;
+                void cleanup(gfx::DescriptorPool& descPool);
+
+                std::vector<gfx::Buffer> uBuffers;
+                std::vector<VkDescriptorSet> _descSets;
+
+                friend class Renderer;
         };
 
         class Renderer{
             public:
-                class Builder{
-                    public:
-                        Builder(GLFWwindow* win):
-                            window{win},
-                            extent{getWindowExtent(window)},
-                            texturePoolSize{0},
-                            vsync{true}
-                        {}
-                        Builder& setExtent(const VkExtent2D& ext){
-                            extent = ext;
-                            return *this;
-                        }
-                        Builder& setTexturePoolSize(const uint32_t& texSz){
-                            texturePoolSize = texSz;
-                            return *this;
-                        }
-                        Builder& setVsync(const bool& _vsync){
-                            vsync = _vsync;
-                            return *this;
-                        }
-                        std::unique_ptr<Renderer> build(){
-                            return std::make_unique<Renderer>(
-                                window, extent, texturePoolSize, vsync
-                            );
-                        }
-                    private:
-                        GLFWwindow* window;
-                        VkExtent2D extent;
-                        uint32_t texturePoolSize;
-                        bool vsync;
+                struct UBO{
+                    glm::mat4 projection;
+                    glm::mat4 view;
                 };
+
+                static constexpr uint32_t UBUFFER_POOL_SIZE = 500*2;
+                static constexpr float MAX_ZINDEX = 100.0f;
 
                 Renderer(
                     GLFWwindow* win,
-                    const VkExtent2D& extent_,
-                    const uint32_t& texturePoolSize,
-                    const bool& vsync
+                    VkExtent2D renderExtent,
+                    uint32_t texturePoolSize,
+                    bool _vsync
                 );
-                ~Renderer();
-
                 shard_delete_copy_constructors(Renderer);
 
-                bool beginRenderPass(const gfx::Color& color);
-                void endRenderPass();
+                bool startFrame(const gfx::Color& color);
+                void endFrame();
 
-                Renderer& drawRect(const Rect& rect);
-                Renderer& drawRectWithBorder(
-                    const Rect& rect, const gfx::Color& borderColor, const float& borderSize
+                uint32_t addRect(
+                    const glm::vec2& position,
+                    float rotation,
+                    const glm::vec2& scale,
+                    const gfx::Color& color,
+                    float zindex
                 );
-
-                Renderer& drawCircle(const Circle& circle);
-                Renderer& drawCircleWithBorder(
-                    const Circle& circle, const gfx::Color& borderColor, const float& borderSize
+                uint32_t addRect(
+                    const glm::vec2& position,
+                    float rotation,
+                    const glm::vec2& scale,
+                    const gfx::Color& color,
+                    float zindex,
+                    float borderSize,
+                    const gfx::Color& borderColor
                 );
-                Renderer& drawSprite(
-                    const Rect& srcRect, const Rect& rect, const uint32_t& texture
-                );
-                Renderer& drawSprite(const Circle& circle, const uint32_t& texture);
+                Rect& getRect(uint32_t name);
+                void removeRect(uint32_t name);
 
-                void waitIdle(){
-                    _gfx.device().waitIdle();
+                Renderer& drawRect(uint32_t name);
+                
+                gfx::Graphics& graphics(){
+                    return gfx;
                 }
 
-                GLFWwindow* window(){
-                    return _window;
-                }
-                gfx::Graphics& gfx(){
-                    return _gfx;
-                }
-                gfx::DescriptorPool& descPool(){
-                    return _descPool;
-                }
-                TextureLoader& tLoader(){
-                    return _tLoader;
-                }
-                VkExtent2D extent() const {
-                    return _extent;
-                }
+                glm::mat4 getProjectionMatrix();
+                void cleanup();
             private:
-                GLFWwindow* _window;
-                gfx::Graphics _gfx;
-                gfx::DescriptorPool _descPool;
-                gfx::DescriptorSetLayout _uniformDescLayout;
-                gfx::DescriptorSetLayout _texDescLayout;
-                TextureLoader _tLoader;
+                VkPipelineLayout 
+                createPipelineLayout(
+                    const std::vector<VkDescriptorSetLayout>& layouts
+                );
 
-                VkExtent2D _extent;
+                GLFWwindow* window;
+                gfx::Graphics gfx;
+                gfx::DescriptorPool descPool;
+                struct{
+                    gfx::DescriptorSetLayout constant;
+                    gfx::DescriptorSetLayout rect;
+                    gfx::DescriptorSetLayout sprite;
 
-                VkCommandBuffer currentCommandBuffer;
+                    VkPipelineLayout plRect;
+                } layouts;
+                struct{
+                    gfx::Pipeline rect;
+                } pipelines;
+                std::vector<gfx::Buffer> constantUniformBuffers;
+                std::vector<VkDescriptorSet> constantDescSets;
+                struct{
+                    gfx::Model rect;
+                } models;
+
+                VkExtent2D extent;
+                bool vsync;
+                VkCommandBuffer currentCommandBuffer
+                                = VK_NULL_HANDLE;
+                struct{
+                    uint32_t rect = 1;
+                } names;
+                std::map<uint32_t, Rect> rects;
         };
     } // namespace r2d
 } // namespace shard

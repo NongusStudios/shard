@@ -2,6 +2,13 @@
 
 namespace shard{
     namespace gfx{
+        Model::Model(Graphics& _gfx):
+            gfx{_gfx},
+            vBuffer{gfx.device()},
+            iBuffer{gfx.device()},
+            vertCount{0},
+            _indexCount{0}
+        {}
         Model::Model(
             Graphics& _gfx,
             const std::vector<Vertex2D>& vertices,
@@ -10,7 +17,7 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vertices.size()*sizeof(gfx::Vertex2D),
+                    vertices.size()*sizeof(Vertex2D),
                     vertices.data()
                 )
             },
@@ -21,7 +28,7 @@ namespace shard{
                 )
             },
             vertCount{uint32_t(vertices.size())},
-            indexCount{uint32_t(indices.size())}
+            _indexCount{uint32_t(indices.size())}
         {}
         Model::Model(
             Graphics& _gfx,
@@ -31,7 +38,7 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vertices.size()*sizeof(gfx::Vertex3D),
+                    vertices.size()*sizeof(Vertex3D),
                     vertices.data()
                 )
             },
@@ -42,8 +49,80 @@ namespace shard{
                 )
             },
             vertCount{uint32_t(vertices.size())},
-            indexCount{uint32_t(indices.size())}
+            _indexCount{uint32_t(indices.size())}
         {}
+        Model::Model(
+            Graphics& _gfx,
+            const Vertex2D* vertices, size_t vcount,
+            const uint32_t* indices,  size_t icount
+        ):
+            gfx{_gfx},
+            vBuffer{
+                gfx.createVertexBuffer(
+                    vcount*sizeof(Vertex2D),
+                    vertices
+                )
+            },
+            iBuffer{
+                gfx.createIndexBuffer(
+                    icount*sizeof(uint32_t),
+                    indices
+                )
+            },
+            vertCount{uint32_t(vcount)},
+            _indexCount{uint32_t(icount)}
+        {}
+        Model::Model(
+            Graphics& _gfx,
+            const Vertex3D* vertices, size_t vcount,
+            const uint32_t* indices,  size_t icount
+        ):
+            gfx{_gfx},
+            vBuffer{
+                gfx.createVertexBuffer(
+                    vcount*sizeof(Vertex3D),
+                    vertices
+                )
+            },
+            iBuffer{
+                gfx.createIndexBuffer(
+                    icount*sizeof(uint32_t),
+                    indices
+                )
+            },
+            vertCount{uint32_t(vcount)},
+            _indexCount{uint32_t(icount)}
+        {}
+        Model::Model(Model&  m):
+            gfx{m.gfx},
+            vBuffer{m.vBuffer},
+            iBuffer{m.iBuffer},
+            vertCount{m.vertCount},
+            _indexCount{m._indexCount}
+        {}
+        Model::Model(Model&& m):
+            gfx{m.gfx},
+            vBuffer{m.vBuffer},
+            iBuffer{m.iBuffer},
+            vertCount{m.vertCount},
+            _indexCount{m._indexCount}
+        {}
+        Model& Model::operator = (Model&  m){
+            assert(&gfx == &m.gfx);
+            vBuffer = m.vBuffer;
+            iBuffer = m.iBuffer;
+            vertCount = m.vertCount;
+            _indexCount = m._indexCount;
+            return *this;
+        }
+        Model& Model::operator = (Model&& m){
+            assert(&gfx == &m.gfx);
+            vBuffer = m.vBuffer;
+            iBuffer = m.iBuffer;
+            vertCount = m.vertCount;
+            _indexCount = m._indexCount;
+            return *this;
+        }
 
         void Model::bind(VkCommandBuffer cBuf){
             assert(valid());
@@ -54,7 +133,7 @@ namespace shard{
         void Model::draw(VkCommandBuffer cBuf){
             assert(valid());
             if(iBuffer.valid()){
-                vkCmdDrawIndexed(cBuf, indexCount, 1, 0, 0, 0);
+                vkCmdDrawIndexed(cBuf, _indexCount, 1, 0, 0, 0);
                 return;
             }
             vkCmdDraw(cBuf, vertCount, 1, 0, 0);

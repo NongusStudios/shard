@@ -27,9 +27,7 @@
 
 #define shard_delete_copy_constructors(className) \
     className(const className&) = delete; \
-    className& operator = (const className&) = delete; \
-    className(className&&) = delete; \
-    className& operator = (className&&) = delete
+    className& operator = (const className&) = delete
 
 namespace shard{
     inline uint32_t makeVersion(uint32_t major, uint32_t minor, uint32_t patch){
@@ -62,6 +60,11 @@ namespace shard{
         double x, y;
         glfwGetCursorPos(window, &x, &y);
         return glm::vec2(float(x), float(y));
+    }
+    inline uint32_t calculateMipmapLevels(uint32_t w, uint32_t h){
+        return uint32_t(
+                std::floor(std::log2(std::max(w, h)))
+        ) + 1;
     }
 } // namespace shard
 

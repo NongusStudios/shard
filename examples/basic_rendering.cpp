@@ -1,40 +1,63 @@
 #include <shard/renderer/renderer2d.hpp>
+#include <shard/random/random.hpp>
 #include <shard/time/time.hpp>
 
-class BasicRendering {
+class BasicRendering{
     public:
         static constexpr int WIDTH = 800;
         static constexpr int HEIGHT = 600;
+        static constexpr uint32_t RECT_COUNT = 100;
 
         BasicRendering():
             window{createWindow(WIDTH, HEIGHT)},
-            _renderer{
-                shard::r2d::Renderer::Builder(window)
-                    .setExtent({uint32_t(WIDTH), uint32_t(HEIGHT)})
-                    .setTexturePoolSize(50)
-                    .setVsync(true)
-                    .build()
+            r2d{window, {WIDTH, HEIGHT}, 50, true}
+        {
+            shard::time::updateTime(time);
+            shard::randy::Random rand(time.ticks);
+
+            middleRect = r2d.addRect(
+                {-300.0f, 200.0f},
+                0.0f,
+                {32.0f, 32.0f},
+                {255.0f},
+                100.0f,
+                0.04f,
+                {0.0f}
+            );
+
+            rects.resize(RECT_COUNT);
+            for(auto& rect : rects){
+                rect = r2d.addRect(
+                    {
+                        rand.randRangef(-float(WIDTH/2 ), float(WIDTH/2)),
+                        rand.randRangef(-float(HEIGHT/2), float(HEIGHT/2))
+                    },
+                    glm::degrees(rand.randRangef(0.0f, 360.0f)),
+                    {
+                        rand.randRangef(1.0f, 100.0f),
+                        rand.randRangef(1.0f, 100.0f)
+                    },
+                    {
+                        rand.randRangef(0.0f, 255.0f),
+                        rand.randRangef(0.0f, 255.0f),
+                        rand.randRangef(0.0f, 255.0f)
+                    },
+                    rand.randRangef(-99.0f, 99.0f)
+                );
             }
-        {}
+        }
         ~BasicRendering(){}
 
         void render(){
-            if(renderer().beginRenderPass(shard::gfx::Color(44.0f))){
-                // TODO
-                /*renderer()
-                    .drawRect(shard::r2d::Rect(
-                        {200.0f, -60.0f}, 0.0f, {32.0f, 32.0f},
-                        shard::gfx::Color(252.0f, 8.0f, 104.0f)
-                    ))
-                    .drawRectWithBorder(shard::r2d::Rect(
-                        {-200.0f, 60.0f}, 45.0f, {48.0f, 48.0f},
-                        shard::gfx::Color(8.0f, 252.0f, 104.0f)
-                    ), shard::gfx::Color(0.0f), 1.0f)
-                    .drawCircle(shard::r2d::Circle(
-                        {0.0f, 0.0f}, 16.0f, shard::gfx::Color(255.0f)
-                    ));
-                */
-                renderer().endRenderPass();
+            shard::r2d::Rect& mRect = r2d.getRect(middleRect);
+            mRect.rotation += (glm::pi<float>()/2.0f)*time.dt;
+
+            if(r2d.startFrame({44.0f})){
+                for(auto& rect : rects){
+                    r2d.drawRect(rect);
+                }
+                r2d.drawRect(middleRect);
+                r2d.endFrame();
             }
         }
         void run(){
@@ -43,10 +66,8 @@ class BasicRendering {
                 shard::time::updateTime(time);
                 render();
             }
-            renderer().waitIdle();
+            r2d.cleanup();
         }
-        
-        shard::r2d::Renderer& renderer(){ return *_renderer; }
     private:
         GLFWwindow* createWindow(int width, int height){
             shard_abort_ifnot(glfwInit());
@@ -60,8 +81,11 @@ class BasicRendering {
             return win;
         }
         GLFWwindow* window;
-        std::unique_ptr<shard::r2d::Renderer> _renderer;
+        shard::r2d::Renderer r2d;
         shard::Time time;
+
+        uint32_t middleRect;
+        std::vector<uint32_t> rects;
 };
 
 int main(){

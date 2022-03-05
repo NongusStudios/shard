@@ -47,11 +47,13 @@ namespace shard{
                        color == v.color;
             }
 
-            static VkVertexInputBindingDescription bindingDesc(){
+            static VkVertexInputBindingDescription bindingDesc(
+                VkVertexInputRate inputRate
+            ){
                 VkVertexInputBindingDescription binding = {};
                 binding.binding = 0;
                 binding.stride = sizeof(Vertex2D);
-                binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+                binding.inputRate = inputRate;
                 return binding;
             }
 
@@ -107,11 +109,13 @@ namespace shard{
                        color  == v.color;
             }
 
-            static VkVertexInputBindingDescription bindingDesc(){
+            static VkVertexInputBindingDescription bindingDesc(
+                VkVertexInputRate inputRate
+            ){
                 VkVertexInputBindingDescription binding = {};
                 binding.binding = 0;
                 binding.stride = sizeof(Vertex3D);
-                binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+                binding.inputRate = inputRate;
                 return binding;
             }
 
@@ -145,18 +149,33 @@ namespace shard{
 } // namespace shard
 
 namespace std {
-template <>
-struct hash<shard::gfx::Vertex3D> {
-    size_t operator()(shard::gfx::Vertex3D const &vertex) const {
-        size_t seed = 5381;
-        uint8_t bytes[sizeof(vertex)];
-        memcpy(bytes, &vertex, sizeof(bytes));
-        for(size_t i = 0; i < sizeof(bytes); i++){
-            seed = ((seed << 5) + seed) + bytes[i];
-        } 
-        return seed;
-    }
-};
+    template <>
+    struct hash<shard::gfx::Vertex2D> {
+        size_t operator()(shard::gfx::Vertex2D const &vertex) const {
+            size_t seed = 5381;
+            uint8_t bytes[sizeof(vertex)];
+            memcpy(bytes, &vertex, sizeof(bytes));
+            for(size_t i = 0; i < sizeof(bytes); i++){
+                seed = ((seed << 5) + seed) + bytes[i];
+            } 
+            return seed;
+        }
+    };
+}  // namespace std
+
+namespace std {
+    template <>
+    struct hash<shard::gfx::Vertex3D> {
+        size_t operator()(shard::gfx::Vertex3D const &vertex) const {
+            size_t seed = 5381;
+            uint8_t bytes[sizeof(vertex)];
+            memcpy(bytes, &vertex, sizeof(bytes));
+            for(size_t i = 0; i < sizeof(bytes); i++){
+                seed = ((seed << 5) + seed) + bytes[i];
+            } 
+            return seed;
+        }
+    };
 }  // namespace std
 
 namespace shard{

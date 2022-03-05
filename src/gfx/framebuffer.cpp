@@ -55,7 +55,7 @@ namespace shard{
             _framebuffer{fb._framebuffer},
             _extent{fb._extent}
         {
-            assert(fb.valid());
+            //assert(fb.valid());
             fb._framebuffer = VK_NULL_HANDLE;
         }
         Framebuffer::Framebuffer(Framebuffer&& fb):
@@ -63,7 +63,7 @@ namespace shard{
             _framebuffer{fb._framebuffer},
             _extent{fb._extent}
         {
-            assert(fb.valid());
+            //assert(fb.valid());
             fb._framebuffer = VK_NULL_HANDLE;
         }
         Framebuffer::~Framebuffer(){

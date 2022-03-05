@@ -71,6 +71,26 @@ namespace shard{
                 Buffer createVertexBuffer(size_t size, const void* data);
                 Buffer createIndexBuffer(size_t size, const void* data);
                 Buffer createUniformBuffer(size_t size, const void* data);
+                Image createTexture(const char* filePath);
+                // Pixel format must be in VK_FORMAT_R8G8B8A8_BIT
+                Image createTexture(uint32_t w, uint32_t h, const void* pixels);
+                Image createImage(
+                    uint32_t w, uint32_t h, uint32_t mipLevels,
+                    VkFormat __format, VkImageTiling tiling,
+                    VkSampleCountFlagBits samples,
+                    VkImageUsageFlags usage,
+                    VkImageCreateFlags flags,
+                    VmaMemoryUsage memUsage,
+                    VkImageAspectFlags aspectMask
+                );
+                Framebuffer createFramebuffer(std::vector<Image>& attachments);
+                Framebuffer createFramebuffer(
+                    VkRenderPass renderPass, std::vector<Image>& attachments
+                );
+                Framebuffer createFramebuffer(std::vector<Image>&& attachments);
+                Framebuffer createFramebuffer(
+                    VkRenderPass renderPass, std::vector<Image>&& attachments
+                );
 
                 VkCommandBuffer beginRenderPass(const Color& clearColor);
                 void endRenderPass();

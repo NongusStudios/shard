@@ -6,9 +6,9 @@ namespace shard{
     namespace randy{
         class Random{
             public:
-                Random(const size_t& seed);
+                Random(const size_t seed);
 
-                void setSeed(const size_t& seed){
+                void setSeed(const size_t seed){
                     rng.seed(seed);
                 }
 
@@ -19,16 +19,15 @@ namespace shard{
                 // Produces random double between 0.0 and 1.0
                 double   randf64();
 
-                float   randRangef  (const float&   min, const float&   max);
-                double  randRangef64(const double&  min, const double&  max);
-                int32_t randRange   (const int32_t& min, const int32_t& max);
-                int64_t randRange64 (const int64_t& min, const int64_t& max);
+                float   randRangef  (const float   min, const float   max);
+                double  randRangef64(const double  min, const double  max);
+                int32_t randRange   (const int32_t min, const int32_t max);
+                int64_t randRange64 (const int64_t min, const int64_t max);
             private:
                 std::mt19937 rng;
         };
     } // namespace randy
 } // namespace shard
-
 
 /**
     Copyright 2022 Nongus Studios (https://github.com/NongusStudios/shard)

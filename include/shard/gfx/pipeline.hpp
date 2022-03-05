@@ -112,6 +112,8 @@ namespace shard{
 
                 ~Pipeline();
 
+                shard_delete_copy_constructors(Pipeline);
+
                 Pipeline& operator = (Pipeline& p){
                     assert(&device == &p.device);
                     vkDestroyPipeline(device.device(), _pipeline, nullptr);
@@ -126,6 +128,9 @@ namespace shard{
                     p._pipeline = VK_NULL_HANDLE;
                     return *this;
                 }
+
+                VkPipeline pipeline(){ return _pipeline; }
+                const VkPipeline pipeline() const { return _pipeline; }
 
                 bool valid() const { return _pipeline != VK_NULL_HANDLE; }
 

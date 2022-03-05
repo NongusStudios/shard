@@ -139,6 +139,56 @@ namespace shard{
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
         }
+        Image Graphics::createTexture(const char* filePath){
+            return Image(*_device, filePath);
+        }
+        // Pixel format must be in VK_FORMAT_R8G8B8A8_BIT
+        Image Graphics::createTexture(uint32_t w, uint32_t h, const void* pixels){
+            return Image(*_device, w, h, pixels);
+        }
+        Image Graphics::createImage(
+            uint32_t w, uint32_t h, uint32_t mipLevels,
+            VkFormat format, VkImageTiling tiling,
+            VkSampleCountFlagBits samples,
+            VkImageUsageFlags usage,
+            VkImageCreateFlags flags,
+            VmaMemoryUsage memUsage,
+            VkImageAspectFlags aspectMask
+        ){
+            return Image(*_device,
+                w, h, mipLevels,
+                0, format, tiling,
+                samples, usage,
+                flags, memUsage,
+                aspectMask
+            );
+        }
+        Framebuffer Graphics::createFramebuffer(std::vector<Image>& attachments){
+            return Framebuffer(
+                *_device, _swapchain->renderPass(), attachments
+            );
+        }
+        Framebuffer Graphics::createFramebuffer(
+            VkRenderPass renderPass, std::vector<Image>& attachments
+        ){
+            assert(renderPass != VK_NULL_HANDLE);
+            return Framebuffer(
+                *_device, renderPass, attachments
+            );
+        }
+        Framebuffer Graphics::createFramebuffer(std::vector<Image>&& attachments){
+            return Framebuffer(
+                *_device, _swapchain->renderPass(), attachments
+            );
+        }
+        Framebuffer Graphics::createFramebuffer(
+            VkRenderPass renderPass, std::vector<Image>&& attachments
+        ){
+            assert(renderPass != VK_NULL_HANDLE);
+            return Framebuffer(
+                *_device, renderPass, attachments
+            );
+        }
 
         VkCommandBuffer Graphics::beginRenderPass(const Color& clearColor){
             assert(!isFrameStarted);
