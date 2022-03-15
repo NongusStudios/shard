@@ -189,6 +189,24 @@ namespace shard{
                 *_device, renderPass, attachments
             );
         }
+        Sampler Graphics::createSampler(
+            VkFilter magFilter, VkFilter minFilter,
+            VkSamplerAddressMode U,
+            VkSamplerAddressMode V,
+            VkSamplerAddressMode W,
+            VkBool32 anisotropy,
+            VkBorderColor bColor,
+            VkSamplerMipmapMode mipMode,
+            uint32_t mipLevels
+        ){
+            return Sampler(*_device,
+                magFilter, minFilter,
+                U, V, W,
+                anisotropy,
+                bColor, mipMode,
+                mipLevels
+            );
+        }
 
         VkCommandBuffer Graphics::beginRenderPass(const Color& clearColor){
             assert(!isFrameStarted);

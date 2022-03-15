@@ -8,6 +8,7 @@ namespace shard{
         {
             int w, h, channels;
             stbi_uc* pixels = stbi_load(filePath, &w, &h, &channels, STBI_rgb_alpha);
+            assert(pixels != nullptr && "File does not exist!");
 
             *this = Image(
                 device, 

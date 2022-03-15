@@ -91,6 +91,16 @@ namespace shard{
                 Framebuffer createFramebuffer(
                     VkRenderPass renderPass, std::vector<Image>&& attachments
                 );
+                Sampler createSampler(
+                    VkFilter magFilter, VkFilter minFilter,
+                    VkSamplerAddressMode U,
+                    VkSamplerAddressMode V,
+                    VkSamplerAddressMode W,
+                    VkBool32 anisotropy,
+                    VkBorderColor bColor,
+                    VkSamplerMipmapMode mipMode,
+                    uint32_t mipLevels
+                );
 
                 VkCommandBuffer beginRenderPass(const Color& clearColor);
                 void endRenderPass();
