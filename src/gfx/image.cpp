@@ -7,6 +7,7 @@ namespace shard{
             device{_device}
         {
             int w, h, channels;
+            stbi_set_flip_vertically_on_load(true);
             stbi_uc* pixels = stbi_load(filePath, &w, &h, &channels, STBI_rgb_alpha);
             assert(pixels != nullptr && "File does not exist!");
 

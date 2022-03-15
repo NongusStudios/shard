@@ -15,8 +15,18 @@ class BasicRendering{
             shard::time::updateTime(time);
             shard::randy::Random rand(time.ticks);
 
-            middleRect = r2d.addRect(
-                {-300.0f, 200.0f},
+            face_jpg = r2d.addTexture("res/face.jpg", VK_FILTER_LINEAR);
+            faceSprite = r2d.addSprite(
+                face_jpg,
+                {0.0f, 0.0f},
+                0.0f,
+                {float(WIDTH/2), float(HEIGHT/2)},
+                shard::gfx::Color(255.0f),
+                -99.9f
+            );
+
+            rect = r2d.addRect(
+                {0.0f, 0.0f},
                 0.0f,
                 {32.0f, 32.0f},
                 {255.0f},
@@ -24,39 +34,16 @@ class BasicRendering{
                 0.04f,
                 {0.0f}
             );
-
-            rects.resize(RECT_COUNT);
-            for(auto& rect : rects){
-                rect = r2d.addRect(
-                    {
-                        rand.randRangef(-float(WIDTH/2 ), float(WIDTH/2)),
-                        rand.randRangef(-float(HEIGHT/2), float(HEIGHT/2))
-                    },
-                    glm::degrees(rand.randRangef(0.0f, 360.0f)),
-                    {
-                        rand.randRangef(1.0f, 100.0f),
-                        rand.randRangef(1.0f, 100.0f)
-                    },
-                    {
-                        rand.randRangef(0.0f, 255.0f),
-                        rand.randRangef(0.0f, 255.0f),
-                        rand.randRangef(0.0f, 255.0f)
-                    },
-                    rand.randRangef(-99.0f, 99.0f)
-                );
-            }
         }
         ~BasicRendering(){}
 
         void render(){
-            shard::r2d::Rect& mRect = r2d.getRect(middleRect);
+            shard::r2d::Rect& mRect = r2d.getRect(rect);
             mRect.rotation += (glm::pi<float>()/2.0f)*time.dt;
 
             if(r2d.startFrame({44.0f})){
-                for(auto& rect : rects){
-                    r2d.drawRect(rect);
-                }
-                r2d.drawRect(middleRect);
+                r2d.drawRect(rect);
+                r2d.drawSprite(faceSprite);
                 r2d.endFrame();
             }
         }
@@ -84,7 +71,9 @@ class BasicRendering{
         shard::r2d::Renderer r2d;
         shard::Time time;
 
-        uint32_t middleRect;
+        uint32_t rect;
+        uint32_t face_jpg;
+        uint32_t faceSprite;
         std::vector<uint32_t> rects;
 };
 

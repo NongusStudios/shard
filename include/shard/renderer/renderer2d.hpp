@@ -49,7 +49,7 @@ namespace shard{
                     rotation = glm::radians(deg);
                 }
 
-                glm::mat4 modelMatrix();
+                glm::mat4 modelMatrix() const;
 
                 glm::vec2  position;
                 float      rotation = 0.0f;
@@ -67,12 +67,71 @@ namespace shard{
 
                 friend class Renderer;
         };
+        class Sprite{
+            public:
+                struct UBO {
+                    alignas(16) glm::mat4  model;
+                    alignas(16) gfx::Color color;
+                    alignas(8)  glm::vec2  srcRectPos;
+                    alignas(8)  glm::vec2  srcRectSize;
+                };
+                
+                Sprite(){}
+                Sprite(
+                    gfx::Graphics& gfx,
+                    gfx::DescriptorPool& pool,
+                    gfx::DescriptorSetLayout& layout,
+                    gfx::Image& image,
+                    gfx::Sampler& sampler,
+                    uint32_t binding,
+                    uint32_t texBinding,
+                    const glm::vec2& pos,
+                    float rot,
+                    const glm::vec2& _scale,
+                    const gfx::Color& _color,
+                    float _zindex,
+                    const glm::vec2& srcPos,
+                    const glm::vec2& srcSize
+                );
+
+                void bind(
+                    VkCommandBuffer commandBuffer,
+                    VkDescriptorSet constDescSet,
+                    VkPipelineLayout pLayout,
+                    uint32_t frameIndex
+                );
+                void rotationDegrees(float deg){
+                    rotation = glm::radians(deg);
+                }
+                glm::mat4 modelMatrix() const;
+
+                glm::vec2  position;
+                float      rotation = 0.0f;
+                glm::vec2  scale;
+                gfx::Color color;
+                float      zindex = 0.0f;
+                struct{
+                    glm::vec2 position;
+                    glm::vec2 size;
+                } srcRect;
+            private:
+                void cleanup(gfx::DescriptorPool& descPool);
+
+                std::vector<gfx::Buffer> uBuffers;
+                std::vector<VkDescriptorSet> _descSets;
+
+                friend class Renderer;
+        };
 
         class Renderer{
             public:
                 struct UBO{
                     glm::mat4 projection;
                     glm::mat4 view;
+                };
+                struct Texture{
+                    gfx::Image image;
+                    gfx::Sampler sampler;
                 };
 
                 static constexpr uint32_t UBUFFER_POOL_SIZE = 500*2;
@@ -108,11 +167,39 @@ namespace shard{
                 Rect& getRect(uint32_t name);
                 void removeRect(uint32_t name);
 
+                uint32_t addTexture(const char* filePath, VkFilter filter);
+                Texture& getTexture(uint32_t name);
+                void removeTexture(uint32_t name);
+
+                uint32_t addSprite(
+                    uint32_t texture,
+                    const glm::vec2& position,
+                    float rotation,
+                    const glm::vec2& scale,
+                    const gfx::Color& color,
+                    float zindex
+                );
+                uint32_t addSprite(
+                    uint32_t texture,
+                    const glm::vec2& position,
+                    float rotation,
+                    const glm::vec2& scale,
+                    const gfx::Color& color,
+                    float zindex,
+                    const glm::vec2& srcPos,
+                    const glm::vec2& srcSize
+                );
+                Sprite& getSprite(uint32_t name);
+                void removeSprite(uint32_t name);
+
                 Renderer& drawRect(uint32_t name);
+                Renderer& drawSprite(uint32_t name);
                 
                 gfx::Graphics& graphics(){
                     return gfx;
                 }
+
+                void setVsync(bool vsync);
 
                 glm::mat4 getProjectionMatrix();
                 void cleanup();
@@ -131,9 +218,11 @@ namespace shard{
                     gfx::DescriptorSetLayout sprite;
 
                     VkPipelineLayout plRect;
+                    VkPipelineLayout plSprite;
                 } layouts;
                 struct{
                     gfx::Pipeline rect;
+                    gfx::Pipeline sprite;
                 } pipelines;
                 std::vector<gfx::Buffer> constantUniformBuffers;
                 std::vector<VkDescriptorSet> constantDescSets;
@@ -146,9 +235,13 @@ namespace shard{
                 VkCommandBuffer currentCommandBuffer
                                 = VK_NULL_HANDLE;
                 struct{
-                    uint32_t rect = 1;
+                    uint32_t rect    = 1;
+                    uint32_t texture = 1;
+                    uint32_t sprite  = 1;
                 } names;
                 std::map<uint32_t, Rect> rects;
+                std::map<uint32_t, std::unique_ptr<Texture>> textures;
+                std::map<uint32_t, Sprite> sprites;
         };
     } // namespace r2d
 } // namespace shard

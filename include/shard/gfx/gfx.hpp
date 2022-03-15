@@ -102,6 +102,8 @@ namespace shard{
                     uint32_t mipLevels
                 );
 
+                void setVsync(bool _vsync);
+
                 VkCommandBuffer beginRenderPass(const Color& clearColor);
                 void endRenderPass();
             private:
@@ -111,7 +113,7 @@ namespace shard{
 
                 void destroyCommandBuffers();
 
-                const bool VSYNC;
+                bool VSYNC;
                 GLFWwindow* _window;
                 PipelineConfigInfo _defaultPipelineConfig;
                 std::unique_ptr<Device> _device;

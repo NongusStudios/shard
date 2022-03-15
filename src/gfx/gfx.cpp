@@ -208,6 +208,11 @@ namespace shard{
             );
         }
 
+        void Graphics::setVsync(bool vsync){
+            VSYNC = vsync;
+            recreateSwapchain();
+        }
+
         VkCommandBuffer Graphics::beginRenderPass(const Color& clearColor){
             assert(!isFrameStarted);
             VkResult result = _swapchain->acquireNextImage(&imageIndex);

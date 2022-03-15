@@ -95,12 +95,96 @@ namespace shard{
                 _descSets
             );
         }
-        glm::mat4 Rect::modelMatrix(){
+        glm::mat4 Rect::modelMatrix() const {
             glm::mat4 m = glm::mat4(1.0f);
             m = glm::translate(m, {position, zindex});
             m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
             m = glm::scale(m, {scale, 0.0f});
             return m;
+        }
+
+        Sprite::Sprite(
+            gfx::Graphics& gfx,
+            gfx::DescriptorPool& pool,
+            gfx::DescriptorSetLayout& layout,
+            gfx::Image& image,
+            gfx::Sampler& sampler,
+            uint32_t binding,
+            uint32_t texBinding,
+            const glm::vec2& pos,
+            float rot,
+            const glm::vec2& _scale,
+            const gfx::Color& _color,
+            float _zindex,
+            const glm::vec2& srcPos,
+            const glm::vec2& srcSize
+        ):
+            position{pos},
+            rotation{rot},
+            scale{_scale},
+            color{_color},
+            zindex{_zindex},
+            srcRect{
+                srcPos,
+                srcSize
+            }
+        {
+            _descSets.resize(gfx::Swapchain::MAX_FRAMES_IN_FLIGHT);
+            for(uint32_t i = 0; i < gfx::Swapchain::MAX_FRAMES_IN_FLIGHT; i++){
+                uBuffers.push_back(gfx::Buffer(
+                    gfx.createUniformBuffer(
+                        sizeof(UBO), nullptr
+                    )
+                ));
+                uBuffers[i].map();
+
+                auto bufferInfo = uBuffers[i].descriptorInfo();
+                auto imageInfo = image.descriptorInfo(sampler);
+                gfx::DescriptorWriter(layout, pool)
+                    .writeBuffer(binding, &bufferInfo)
+                    .writeImage(texBinding, &imageInfo)
+                    .build(_descSets[i]);
+            }
+        }
+
+        void Sprite::bind(
+            VkCommandBuffer commandBuffer,
+            VkDescriptorSet constDescSet,
+            VkPipelineLayout pLayout,
+            uint32_t frameIndex
+        ){
+            UBO ubo = {};
+            ubo.model       = this->modelMatrix();
+            ubo.color       = color;
+            ubo.srcRectPos  = srcRect.position;
+            ubo.srcRectSize = srcRect.size;
+
+            memcpy(
+                uBuffers[frameIndex].mappedMemory(),
+                &ubo,
+                sizeof(UBO)
+            );                       // constant     // variable
+            VkDescriptorSet descSets[] = {constDescSet, _descSets[frameIndex]};
+            vkCmdBindDescriptorSets(commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pLayout,
+                0, 2,
+                descSets,
+                0, nullptr
+            );
+        }
+        glm::mat4 Sprite::modelMatrix() const {
+            glm::mat4 m = glm::mat4(1.0f);
+            m = glm::translate(m, {position, zindex});
+            m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
+            m = glm::scale(m, {scale, 0.0f});
+            return m;
+        }
+
+        void Sprite::cleanup(gfx::DescriptorPool& descPool){
+            descPool.freeDescriptors(
+                _descSets
+            );
         }
 
         // Renderer begin
@@ -155,6 +239,12 @@ namespace shard{
                         layouts.constant.layout(),
                         layouts.rect.layout()
                     }
+                ),
+                createPipelineLayout(
+                    {
+                        layouts.constant.layout(),
+                        layouts.sprite.layout()
+                    }
                 )
             },
             pipelines{
@@ -162,6 +252,16 @@ namespace shard{
                     layouts.plRect,
                     "shaders/r2d/rect.vert.spv",
                     "shaders/r2d/rect.frag.spv",
+                    {gfx::Vertex2D::bindingDesc(
+                        VK_VERTEX_INPUT_RATE_VERTEX
+                    )},
+                    gfx::Vertex2D::attributeDescs(),
+                    gfx.deafultPipelineConfig()
+                ),
+                gfx.createPipeline(
+                    layouts.plSprite,
+                    "shaders/r2d/sprite.vert.spv",
+                    "shaders/r2d/sprite.frag.spv",
                     {gfx::Vertex2D::bindingDesc(
                         VK_VERTEX_INPUT_RATE_VERTEX
                     )},
@@ -260,6 +360,90 @@ namespace shard{
             rects.erase(name);
         }
 
+        uint32_t Renderer::addTexture(const char* filePath, VkFilter filter){
+            gfx::Image tex = gfx.createTexture(filePath);
+            uint32_t texMipMap = tex.mipMapLevels();
+            textures[names.texture] = std::make_unique<Texture>(
+                tex,
+                gfx.createSampler(
+                    filter,
+                    filter,
+                    VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                    VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                    VK_SAMPLER_ADDRESS_MODE_REPEAT,
+                    VK_TRUE,
+                    VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+                    VK_SAMPLER_MIPMAP_MODE_LINEAR, texMipMap
+                )
+            );
+            return names.texture++;
+        }
+        Renderer::Texture& Renderer::getTexture(uint32_t name){
+            assert(textures.contains(name));
+            return *textures[name];
+        }
+        void Renderer::removeTexture(uint32_t name){
+            assert(textures.contains(name));
+            textures.erase(name);
+        }
+
+        uint32_t Renderer::addSprite(
+            uint32_t texture,
+            const glm::vec2& position,
+            float rotation,
+            const glm::vec2& scale,
+            const gfx::Color& color,
+            float zindex
+        ){
+            Texture& tex = getTexture(texture);
+            sprites[names.sprite] = Sprite(
+                gfx,
+                descPool,
+                layouts.sprite,
+                tex.image, tex.sampler,
+                0, 1,
+                position, rotation, scale,
+                color, zindex,
+                {0.0f, 0.0f},
+                {1.0f, 1.0f}
+            );
+            return names.sprite++;
+        }
+        uint32_t Renderer::addSprite(
+            uint32_t texture,
+            const glm::vec2& position,
+            float rotation,
+            const glm::vec2& scale,
+            const gfx::Color& color,
+            float zindex,
+            const glm::vec2& srcPos,
+            const glm::vec2& srcSize
+        ){
+            Texture& tex = getTexture(texture);
+            sprites[names.sprite] = Sprite(
+                gfx,
+                descPool,
+                layouts.sprite,
+                tex.image, tex.sampler,
+                0, 1,
+                position, rotation, scale,
+                color, zindex,
+                srcPos,
+                srcSize
+            );
+            return names.sprite++;
+        }
+        Sprite& Renderer::getSprite(uint32_t sprite){
+            assert(sprites.contains(sprite));
+            return sprites[sprite];
+        }
+        void Renderer::removeSprite(uint32_t sprite){
+            assert(sprites.contains(sprite));
+            Sprite& s = getSprite(sprite);
+            s.cleanup(descPool);
+            sprites.erase(sprite);
+        }
+
         Renderer& Renderer::drawRect(uint32_t name){
             assert(currentCommandBuffer != VK_NULL_HANDLE);
 
@@ -278,6 +462,28 @@ namespace shard{
 
             return *this;
         }
+        Renderer& Renderer::drawSprite(uint32_t name){
+            assert(currentCommandBuffer != VK_NULL_HANDLE);
+
+            Sprite& sprite = getSprite(name);
+            sprite.bind(
+                currentCommandBuffer,
+                constantDescSets[gfx.frameIndex()],
+                layouts.plSprite,
+                gfx.frameIndex()
+            );
+            pipelines.sprite.bind(currentCommandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS
+            );
+            models.rect.bind(currentCommandBuffer);
+            models.rect.draw(currentCommandBuffer);
+
+            return *this;
+        }
+
+        void Renderer::setVsync(bool vsync){
+            gfx.setVsync(vsync);
+        }
 
         glm::mat4 Renderer::getProjectionMatrix(){
             // temp begin
@@ -292,6 +498,10 @@ namespace shard{
         void Renderer::cleanup(){
             assert(currentCommandBuffer == VK_NULL_HANDLE);
             gfx.device().waitIdle();
+            vkDestroyPipelineLayout(
+                gfx.device().device(), layouts.plSprite,
+                nullptr
+            );
             vkDestroyPipelineLayout(
                 gfx.device().device(), layouts.plRect,
                 nullptr
