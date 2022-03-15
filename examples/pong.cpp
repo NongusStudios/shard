@@ -88,21 +88,25 @@ class Pong{
             );
 
             shard::r2d::Rect& ball = r2d.getRect(renderObjects.ball);
-            ball.position += ballVel * time.dt;
 
+            static float INC_AMOUNT = 1.1f;
             if(ball.position.x > 0){
                 if(checkCollision(ball.position, ball.scale, player2.position, player2.scale)){
                     ballVel = -ballVel * VEL_MUL;
-                    ballVel.y = rng.randRangef(-MAX_Y_VEL, MAX_Y_VEL);
+                    ballVel.y = rng.randRangef(-MAX_Y_VEL*INC_AMOUNT, MAX_Y_VEL*INC_AMOUNT);
+                    INC_AMOUNT += 0.1f;
                 }
             } else{
                 if(checkCollision(ball.position, ball.scale, player1.position, player1.scale)){
                     ballVel = -ballVel * VEL_MUL;
-                    ballVel.y = rng.randRangef(-MAX_Y_VEL, MAX_Y_VEL);
+                    ballVel.y = rng.randRangef(-MAX_Y_VEL*INC_AMOUNT, MAX_Y_VEL*INC_AMOUNT);
+                    INC_AMOUNT += 0.1f;
                 }
             }
 
-            if(ball.position.y > float(HEIGHT/2) || ball.position.y < -float(HEIGHT/2)){
+            ball.position += ballVel * time.dt;
+
+            if(ball.position.y > float(HEIGHT/2)-ball.scale.y || ball.position.y < -float(HEIGHT/2)+ball.scale.y){
                 ballVel.y = -ballVel.y;
             }
 

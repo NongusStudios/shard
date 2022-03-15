@@ -32,5 +32,5 @@ void main(){
         fragColor = getBorder(aspect, var.borderSize, inUv);
         return;
     }
-    fragColor = var.color/255;
+    fragColor = var.color/255.0;
 }
