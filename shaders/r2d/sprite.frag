@@ -14,6 +14,22 @@ layout (set = 1, binding = 0) uniform varUBO {
 } var;
 layout (set = 1, binding = 1) uniform sampler2D sprite;
 
+vec4 calcTexture(){
+    float minx = var.srcPos.x - var.srcSize.x / 2;
+    float maxx = var.srcPos.x + var.srcSize.x / 2;
+
+    float miny = var.srcPos.y - var.srcSize.y / 2;
+    float maxy = var.srcPos.y + var.srcSize.y / 2;
+
+    vec2 correctUv = inUv;
+
+    correctUv.x = minx + (maxx - minx) * inUv.x;
+    correctUv.y = maxy - (maxy - miny) * inUv.y;
+    correctUv.y = 1 - correctUv.y;
+
+    return texture(sprite, correctUv);
+}
+
 void main(){
-    fragColor = texture(sprite, inUv) * (var.color/255.0);
+    fragColor = calcTexture();
 }

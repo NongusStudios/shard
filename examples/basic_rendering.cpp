@@ -1,5 +1,4 @@
 #include <shard/renderer/renderer2d.hpp>
-#include <shard/random/random.hpp>
 #include <shard/time/time.hpp>
 
 class BasicRendering{
@@ -13,7 +12,6 @@ class BasicRendering{
             r2d{window, {WIDTH, HEIGHT}, 50, true}
         {
             shard::time::updateTime(time);
-            shard::randy::Random rand(time.ticks);
 
             face_jpg = r2d.addTexture("res/face.jpg", VK_FILTER_LINEAR);
             faceSprite = r2d.addSprite(

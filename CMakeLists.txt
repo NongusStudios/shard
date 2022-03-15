@@ -41,7 +41,8 @@ add_library(${SHARD_LIB}
 set(MODERN_ART examples/modern_art.cpp)
 set(MONKEY examples/monkey.cpp)
 set(BASIC_RENDERING examples/basic_rendering.cpp)
-set(CURRENT_EXAMPLE ${BASIC_RENDERING})
+set(PONG examples/pong.cpp)
+set(CURRENT_EXAMPLE ${PONG})
 
 set(OUT out)
 add_executable(${OUT} ${CURRENT_EXAMPLE})

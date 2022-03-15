@@ -6,6 +6,7 @@ namespace shard{
     namespace randy{
         class Random{
             public:
+                Random(){}
                 Random(const size_t seed);
 
                 void setSeed(const size_t seed){

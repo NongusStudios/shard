@@ -134,7 +134,7 @@ namespace shard{
                     gfx::Sampler sampler;
                 };
 
-                static constexpr uint32_t UBUFFER_POOL_SIZE = 500*2;
+                static constexpr uint32_t UBUFFER_POOL_SIZE = 5000*gfx::Swapchain::MAX_FRAMES_IN_FLIGHT;
                 static constexpr float MAX_ZINDEX = 100.0f;
 
                 Renderer(
