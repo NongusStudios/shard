@@ -55,16 +55,23 @@ target_link_libraries(${OUT}
 
 # Compile Shaders
 file(GLOB GLSL_FILES 
-    **/*.vert
-    **/**/*.vert
-    **/**/**/*.vert
-    **/**/**/**/*.vert
-    **/**/**/**/**/*.vert
-    **/*.frag
-    **/**/*.frag
-    **/**/**/*.frag
-    **/**/**/**/*.frag
-    **/**/**/**/**/*.frag
+    shaders/*.vert
+    shaders/**/*.vert
+    shaders/**/**/*.vert
+    shaders/**/**/**/*.vert
+    shaders/**/**/**/**/*.vert
+    shaders/*.frag
+    shaders/**/*.frag
+    shaders/**/**/*.frag
+    shaders/**/**/**/*.frag
+    shaders/**/**/**/**/*.frag
+
+    examples/*.vert
+    examples/**/*.vert
+    examples/**/**/*.vert
+    examples/*.frag
+    examples/**/*.frag
+    examples/**/**/*.frag
 )
 
 foreach(GLSL_FILE ${GLSL_FILES})
