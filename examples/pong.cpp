@@ -150,11 +150,14 @@ class Pong{
             }
         }
         void update(){
+            // Uncomment to make player2 unbeatable
+            //player2Pos.y = ballPos.y;
+            
             player1Pos.y
                 = std::clamp(player1Pos.y, -float(HEIGHT/2)+(48.0f/2.0f), float(HEIGHT/2)-TOP_PADDING-(48.0f/2.0f));
             player2Pos.y
                 = std::clamp(player2Pos.y, -float(HEIGHT/2)+(48.0f/2.0f), float(HEIGHT/2)-TOP_PADDING-(48.0f/2.0f));
-        
+
             ballPos += ballVel * time.dt;
             if(ballPos.x > 0.0f && checkCollision(ballPos, {6.0f, 6.0f}, player2Pos, {4.0f, 48.0f/2.0f})){
                 ballVel.x = -HIT_BALL_VEL_X;

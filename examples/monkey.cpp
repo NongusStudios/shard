@@ -52,7 +52,7 @@ class Monkey{
                     config.config
                 )
             },
-            monkeyData{"examples/models/monkey.obj"},
+            monkeyData{"examples/models/GOK.obj"},
             monkeyModel{
                 gfx,
                 monkeyData.vertices,
