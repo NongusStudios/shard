@@ -294,8 +294,8 @@ class Pong{
         uint32_t player2Score = 0;
         glm::vec2 player2Pos = {0.0f, 0.0f};
 
-        const float INIT_BALL_VEL_X = 100.0f;
-        const float HIT_BALL_VEL_X = 350.0f;
+        const float INIT_BALL_VEL_X = 150.0f;
+        const float HIT_BALL_VEL_X = 500.0f;
         const float MAX_Y_VEL = 200.0f;
         glm::vec2 ballPos = { 0.0f, 0.0f };
         glm::vec2 ballVel = {-INIT_BALL_VEL_X, 0.0f};
