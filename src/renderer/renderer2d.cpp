@@ -99,7 +99,7 @@ namespace shard{
             glm::mat4 m = glm::mat4(1.0f);
             m = glm::translate(m, {position, zindex});
             m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
-            m = glm::scale(m, {scale, 0.0f});
+            m = glm::scale(m, {scale/2.0f, 0.0f});
             return m;
         }
 
@@ -177,7 +177,7 @@ namespace shard{
             glm::mat4 m = glm::mat4(1.0f);
             m = glm::translate(m, {position, zindex});
             m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
-            m = glm::scale(m, {scale, 0.0f});
+            m = glm::scale(m, {scale/2.0f, 0.0f});
             return m;
         }
 

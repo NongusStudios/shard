@@ -149,7 +149,7 @@ namespace shard{
             i._format = VK_FORMAT_UNDEFINED;
             i._pixelSize = 0;
             i._mipLevels = 0;
-            i._aspectMask = VK_IMAGE_ASPECT_NONE;
+            i._aspectMask = VK_IMAGE_ASPECT_NONE_KHR;
             i._image = VK_NULL_HANDLE;
             i._imageView = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -172,7 +172,7 @@ namespace shard{
             i._format = VK_FORMAT_UNDEFINED;
             i._pixelSize = 0;
             i._mipLevels = 0;
-            i._aspectMask = VK_IMAGE_ASPECT_NONE;
+            i._aspectMask = VK_IMAGE_ASPECT_NONE_KHR;
             i._image = VK_NULL_HANDLE;
             i._imageView = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -201,7 +201,7 @@ namespace shard{
             i._extent     = {};
             i._format     = VK_FORMAT_UNDEFINED;
             i._mipLevels  = 0;
-            i._aspectMask = VK_IMAGE_ASPECT_NONE;
+            i._aspectMask = VK_IMAGE_ASPECT_NONE_KHR;
             i._image      = VK_NULL_HANDLE;
             i._imageView  = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
@@ -226,7 +226,7 @@ namespace shard{
             i._pixelSize  = 0;
             i._format     = VK_FORMAT_UNDEFINED;
             i._mipLevels  = 0;
-            i._aspectMask = VK_IMAGE_ASPECT_NONE;
+            i._aspectMask = VK_IMAGE_ASPECT_NONE_KHR;
             i._image      = VK_NULL_HANDLE;
             i._imageView  = VK_NULL_HANDLE;
             i._allocation = VK_NULL_HANDLE;
