@@ -28,6 +28,14 @@ namespace shard{
                        b == c.b &&
                        a == c.a;
             }
+            Color normalized() const {
+                return {
+                    r/255.0f,
+                    g/255.0f,
+                    b/255.0f,
+                    a/255.0f
+                };
+            }
 
             float r, g, b, a;
         };

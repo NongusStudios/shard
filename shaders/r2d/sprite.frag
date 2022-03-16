@@ -27,7 +27,7 @@ vec4 calcTexture(){
     correctUv.y = maxy - (maxy - miny) * inUv.y;
     correctUv.y = 1 - correctUv.y;
 
-    return texture(sprite, correctUv);
+    return texture(sprite, correctUv)*var.color;
 }
 
 void main(){

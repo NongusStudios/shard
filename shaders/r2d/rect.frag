@@ -22,8 +22,8 @@ vec4 getBorder(float aspect, float borderSize, vec2 uv){
     float minY = minX / aspect;
 
     if (uv.x < maxX && uv.x > minX && uv.y < maxY && uv.y > minY)
-        return var.color/255.0;
-    return var.borderColor/255.0;
+        return var.color;
+    return var.borderColor;
 }
 
 void main(){
@@ -32,5 +32,5 @@ void main(){
         fragColor = getBorder(aspect, var.borderSize, inUv);
         return;
     }
-    fragColor = var.color/255.0;
+    fragColor = var.color;
 }

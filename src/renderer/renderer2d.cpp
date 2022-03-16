@@ -69,10 +69,10 @@ namespace shard{
         ){
             UBO ubo = {};
             ubo.model = this->modelMatrix();
-            ubo.color = color;
+            ubo.color = color.normalized();
             ubo.hasBorder = hasBorder;
             ubo.borderSize = borderSize;
-            ubo.borderColor = borderColor;
+            ubo.borderColor = borderColor.normalized();
             ubo.rectSize = scale;
             
             memcpy(
@@ -155,7 +155,7 @@ namespace shard{
         ){
             UBO ubo = {};
             ubo.model       = this->modelMatrix();
-            ubo.color       = color;
+            ubo.color       = color.normalized();
             ubo.srcRectPos  = srcRect.position;
             ubo.srcRectSize = srcRect.size;
 

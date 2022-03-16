@@ -3,14 +3,7 @@
 #include <shard/time/time.hpp>
 #include <shard/random/random.hpp>
 
-#include <array>
-
 #define POINTS_TO_WIN 5
-
-struct SrcRect{
-    glm::vec2 pos;
-    glm::vec2 size;
-};
 
 class Pong{
     public:
@@ -197,12 +190,12 @@ class Pong{
                 player2Score = std::clamp(player2Score, uint32_t(0), uint32_t(POINTS_TO_WIN));
 
                 auto& score1 = r2d.getSprite(renderObjects.score1);
-                score1.srcRect.position = SCORE_SRC_RECT_POSITIONS[player1Score].pos;
-                score1.srcRect.size = SCORE_SRC_RECT_POSITIONS[player1Score].size;
+                score1.srcRect.position = {(16.0f+(32.0f*float(player1Score)))/(32.0f*float(POINTS_TO_WIN+1)), 0.5f};
+                score1.srcRect.size = {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f};
 
                 auto& score2 = r2d.getSprite(renderObjects.score2);
-                score2.srcRect.position = SCORE_SRC_RECT_POSITIONS[player2Score].pos;
-                score2.srcRect.size = SCORE_SRC_RECT_POSITIONS[player2Score].size;
+                score2.srcRect.position = {(16.0f+(32.0f*float(player2Score)))/(32.0f*float(POINTS_TO_WIN+1)), 0.5f};
+                score2.srcRect.size = {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f};
 
                 auto& player1 = r2d.getRect(renderObjects.player1);
                 auto& player2 = r2d.getRect(renderObjects.player2);
@@ -306,33 +299,6 @@ class Pong{
         const float MAX_Y_VEL = 200.0f;
         glm::vec2 ballPos = { 0.0f, 0.0f };
         glm::vec2 ballVel = {-INIT_BALL_VEL_X, 0.0f};
-
-        const std::array<SrcRect, POINTS_TO_WIN+1> SCORE_SRC_RECT_POSITIONS = {
-            SrcRect{
-                {16.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            },
-            SrcRect{
-                {48.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            },
-            SrcRect{
-                {80.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            },
-            SrcRect{
-                {112.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            },
-            SrcRect{
-                {144.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            },
-            SrcRect{
-                {176.0f/(32.0f*float(POINTS_TO_WIN+1)), 0.5f},
-                {32.0f/(32.0f*float(POINTS_TO_WIN+1)), 1.0f}
-            }
-        };
 };
 
 int main(){
