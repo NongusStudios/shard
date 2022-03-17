@@ -8,7 +8,7 @@ Right now the engine is still hugely a work in progress, but in its current stat
 some basic games are still possible without too much pain.
 
 # Examples
-> [Pong:](examples/pong.cpp)<br>
+> [Pong](examples/pong.cpp)<br>
 > ![Alt text](examples/pong.png "Pong Example")
 
 # WARNING
