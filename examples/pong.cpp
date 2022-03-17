@@ -16,6 +16,7 @@ class Pong{
             input{window},
             r2d{window, {WIDTH, HEIGHT}, 4, true}
         {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             shard::time::updateTime(time);
             rng = shard::randy::Random(time.ticks);
 
