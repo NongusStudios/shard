@@ -2,8 +2,12 @@
 #include <shard/input/input.hpp>
 #include <shard/time/time.hpp>
 #include <shard/random/random.hpp>
+#include <shard/sound/sound.hpp>
+#include <miniaudio.h>
 
 #define POINTS_TO_WIN 5
+
+#define HIT_SOUND "res/beat.mp3"
 
 class Pong{
     public:
@@ -16,17 +20,19 @@ class Pong{
             input{window},
             r2d{window, {WIDTH, HEIGHT}, 4, true}
         {
+            sound.setVolume(0.5f);
+
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             shard::time::updateTime(time);
             rng = shard::randy::Random(time.ticks);
 
-            actions.player1Up   = input.addAction(shard::Key::W, 0);
-            actions.player1Down = input.addAction(shard::Key::S, 0);
+            actions.player1Up    = input.addAction(shard::Key::W, 0);
+            actions.player1Down  = input.addAction(shard::Key::S, 0);
 
-            actions.player2Up   = input.addAction(shard::Key::UP,   0);
-            actions.player2Down = input.addAction(shard::Key::DOWN, 0);
+            actions.player2Up    = input.addAction(shard::Key::UP,   0);
+            actions.player2Down  = input.addAction(shard::Key::DOWN, 0);
 
-            actions.reset       = input.addAction(shard::Key::R, 0);
+            actions.reset        = input.addAction(shard::Key::R, 0);
 
             textures.score       = r2d.addTexture("res/scoreNumbers.png", VK_FILTER_NEAREST);
             textures.player1Wins = r2d.addTexture("res/player1Wins.png",  VK_FILTER_NEAREST);
@@ -108,7 +114,6 @@ class Pong{
                 default:
                     break;
             }
-
             switch(input.actionPressed(actions.player1Up)){
                 case shard::input::Result::TRUE:
                     if(input.actionPressed(actions.player1Down) != shard::input::Result::TRUE)
@@ -125,7 +130,6 @@ class Pong{
                 default:
                     break;
             }
-
             switch(input.actionPressed(actions.player2Up)){
                 case shard::input::Result::TRUE:
                     if(input.actionPressed(actions.player2Down) != shard::input::Result::TRUE)
@@ -157,10 +161,12 @@ class Pong{
                 ballVel.x = -HIT_BALL_VEL_X;
                 ballVel.y = ballVel.y >= 0.0f ? rng.randRangef(0.0f, MAX_Y_VEL) 
                                               : rng.randRangef(-MAX_Y_VEL, 0.0f);
+                sound.play(HIT_SOUND);
             } else if(ballPos.x < 0.0f && checkCollision(ballPos, {6.0f, 6.0f}, player1Pos, {4.0f, 48.0f/2.0f})){
                 ballVel.x =  HIT_BALL_VEL_X;
                 ballVel.y = ballVel.y >= 0.0f ? rng.randRangef(0.0f, MAX_Y_VEL)
                                               : rng.randRangef(-MAX_Y_VEL, 0.0f);
+                sound.play(HIT_SOUND);
             }
 
             ballPos.y = std::clamp(ballPos.y, -float(HEIGHT/2)+(6.0f/2.0f), float(HEIGHT/2)-TOP_PADDING-(6.0f/2.0f));
@@ -169,6 +175,7 @@ class Pong{
                 ballPos.y <= -float(HEIGHT/2)+(6.0f/2.0f)
             ){
                 ballVel.y *= -1;
+                sound.play(HIT_SOUND);
             }
 
             if(ballPos.x > float(WIDTH/2)){
@@ -261,6 +268,7 @@ class Pong{
         GLFWwindow* window;
         shard::Input input;
         shard::r2d::Renderer r2d;
+        shard::Sound sound;
         shard::Time time;
         shard::randy::Random rng;
         
