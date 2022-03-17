@@ -20,7 +20,7 @@ include_directories(
     lib/glm
     lib/stb
     lib/vma/include
-    lib
+    lib/shardExtraDeps
     include
 )
 file(GLOB SHARD_SRC
