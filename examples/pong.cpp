@@ -238,6 +238,7 @@ class Pong{
                     pos1.y  < pos2.y  + size2.y &&
                     size2.y + pos1.y  > pos2.y;
         }
+
         void reset(){
             ballPos = {0.0f, 0.0f};
             ballVel = {-INIT_BALL_VEL_X, 0.0f};

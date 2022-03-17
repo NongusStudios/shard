@@ -4,19 +4,32 @@
 #include <GLFW/glfw3.h>
 #include <cstdint>
 #include <iostream>
+#include <vector>
+#include <functional>
+#include <string>
+#include <map>
 
 namespace shard{
+    struct Timer{
+        float waitTime = 0.0f;
+        float elapsed  = 0.0f;
+        bool oneShot   = false;
+        std::function<void(Timer&)> callback={};
+        bool finished = false;
+    };
     struct Time{
         float dt=0.0f;
         float elapsed=0.0f;
         uint32_t ticks=0;
         float fps=0.0f;
+        std::map<std::string, Timer> timers={};
     };
     struct TimeStamp{
-        float taken;
-        float ended;
-        float time;
+        float taken = 0.0f;
+        float ended = 0.0f;
+        float time  = 0.0f;
         std::string name = "Time Stamp";
+        TimeStamp(){}
         TimeStamp(const std::string& _name):
             name{_name}
         {}
@@ -37,6 +50,11 @@ namespace shard{
     };
     namespace time{
         void updateTime(Time& time);
+        void addTimer(
+            Time& time, const std::string& name, float waitTime, std::function<void(Timer&)> callback, bool oneShot=false
+        );
+        void resetTimer(Time& time, const std::string& name);
+        Timer& getTimer(Time& time, const std::string& name);
     } // namespace time
 } // namespace shard
 
