@@ -11,6 +11,18 @@ some basic games are still possible without too much pain.
 > [Pong](examples/pong.cpp)<br>
 > ![Alt text](examples/pong.png "Pong Example")
 
+# License
+Shard is under the Apache License. [LICENSE](LICENSE)
+
+# 3rd Party Libraries
+> [Vulkan SDK](https://vulkan.lunarg.com/)<br>
+> [GLFW](https://www.glfw.org/)<br>
+> [VMA](https://gpuopen.com/vulkan-memory-allocator/)<br>
+> [GLM](https://github.com/g-truc/glm)<br>
+> [STB Image](https://github.com/nothings/stb/blob/master/stb_image.h)<br>
+> [Miniaudio](https://github.com/mackron/miniaudio)<br>
+> [Tiny OBJ Loader](https://github.com/tinyobjloader/tinyobjloader)
+
 # WARNING
 If you are looking for something to make a game with I would not recommend using this:<br>
 > It is still in very early stages of development and I am just making it for fun.<br>
