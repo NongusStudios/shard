@@ -16,9 +16,19 @@ namespace shard{
         activeEntityCount++;
         return entity;
     }
-    void   ECS::removeEntity(const Entity& entity){}
-    uint32_t ECS::getSigniture(const Entity& entity) const {
-        return Entity::MAX_ENTITIES;
+    void   ECS::removeEntity(const Entity& entity){
+        assert(entity.valid());
+        setSigniture(entity, 0);
+        availableEntityIDS.push(entity.id());
+        activeEntityCount--;
+        activeEntityCount = std::clamp(activeEntityCount, 0u, Entity::MAX_ENTITIES);
     }
-    void ECS::setSigniture(const Entity& entity, uint32_t sig){}
+    uint32_t ECS::getSigniture(const Entity& entity) const {
+        assert(entity.valid());
+        return signitures[entity.id()];
+    }
+    void ECS::setSigniture(const Entity& entity, uint32_t sig){
+        assert(entity.valid());
+        signitures[entity.id()] = sig;
+    }
 } // namespace shard

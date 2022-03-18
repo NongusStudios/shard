@@ -11,7 +11,7 @@ namespace shard{
             Entity(uint32_t id_): _id{id_} {}
 
             uint32_t id() const { return _id;      }
-            bool valid()  const { return _id != 0; }
+            bool valid()  const { return _id < MAX_ENTITIES; }
         private:
             uint32_t _id;
     };
