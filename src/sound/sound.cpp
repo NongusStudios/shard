@@ -28,10 +28,30 @@ namespace shard{
         assert(sounds.contains(sound));
         return ma_sound_is_playing(&sounds[sound]);
     }
+    bool Sound::isLooping(uint32_t sound){
+        assert(sounds.contains(sound));
+        return ma_sound_is_looping(&sounds[sound]);
+    }
+    void Sound::setLooping(uint32_t sound, bool isLooping){
+        assert(sounds.contains(sound));
+        ma_sound_set_looping(&sounds[sound], isLooping);
+    }
+    void Sound::setVolume(uint32_t sound, float volume){
+        assert(sounds.contains(sound));
+        ma_sound_set_volume(&sounds[sound], volume);
+    }
     Sound::Result Sound::setVolume(float volume){
+        engineVolume = volume;
         return convertMaResultToResult(
             ma_engine_set_volume(&soundEngine, volume)
         );
+    }
+    float Sound::getVolume(uint32_t sound){
+        assert(sounds.contains(sound));
+        return ma_sound_get_volume(&sounds[sound]);
+    }
+    float Sound::getVolume(){
+        return engineVolume;
     }
     Sound::Result Sound::play(const std::string& filePath){
         return convertMaResultToResult(

@@ -3,11 +3,12 @@
 #include <shard/time/time.hpp>
 #include <shard/random/random.hpp>
 #include <shard/sound/sound.hpp>
-#include <miniaudio.h>
 
 #define POINTS_TO_WIN 5
 
-#define HIT_SOUND "res/beat.mp3"
+#define HIT_SOUND "res/hit.wav"
+#define SCORE_SOUND "res/score.wav"
+#define WIN_SOUND "res/win.wav"
 
 class Pong{
     public:
@@ -161,12 +162,14 @@ class Pong{
                 ballVel.x = -HIT_BALL_VEL_X;
                 ballVel.y = ballVel.y >= 0.0f ? rng.randRangef(0.0f, MAX_Y_VEL) 
                                               : rng.randRangef(-MAX_Y_VEL, 0.0f);
-                sound.play(HIT_SOUND);
+                if(!winSoundHasPlayed)
+                    sound.play(HIT_SOUND);
             } else if(ballPos.x < 0.0f && checkCollision(ballPos, {6.0f, 6.0f}, player1Pos, {4.0f, 48.0f/2.0f})){
                 ballVel.x =  HIT_BALL_VEL_X;
                 ballVel.y = ballVel.y >= 0.0f ? rng.randRangef(0.0f, MAX_Y_VEL)
                                               : rng.randRangef(-MAX_Y_VEL, 0.0f);
-                sound.play(HIT_SOUND);
+                if(!winSoundHasPlayed)
+                    sound.play(HIT_SOUND);
             }
 
             ballPos.y = std::clamp(ballPos.y, -float(HEIGHT/2)+(6.0f/2.0f), float(HEIGHT/2)-TOP_PADDING-(6.0f/2.0f));
@@ -175,7 +178,8 @@ class Pong{
                 ballPos.y <= -float(HEIGHT/2)+(6.0f/2.0f)
             ){
                 ballVel.y *= -1;
-                sound.play(HIT_SOUND);
+                if(!winSoundHasPlayed)
+                    sound.play(HIT_SOUND);
             }
 
             if(ballPos.x > float(WIDTH/2)){
@@ -183,13 +187,20 @@ class Pong{
                 if(player1Score < POINTS_TO_WIN){
                     ballVel = {-INIT_BALL_VEL_X, 0.0f};
                     ballPos = {0.0f, 0.0f};
+                    sound.play(SCORE_SOUND);
                 }
             } else if(ballPos.x < -float(WIDTH/2)){
                 player2Score++;
                 if(player2Score < POINTS_TO_WIN){
                     ballVel = { INIT_BALL_VEL_X, 0.0f};
                     ballPos = {0.0f, 0.0f};
+                    sound.play(SCORE_SOUND);
                 }
+            }
+
+            if(!winSoundHasPlayed && (player1Score >= POINTS_TO_WIN || player2Score >= POINTS_TO_WIN)){
+                sound.play(WIN_SOUND);
+                winSoundHasPlayed = true;
             }
         }
         void render(){
@@ -217,7 +228,7 @@ class Pong{
                    .drawRect(  renderObjects.player1)
                    .drawRect(  renderObjects.player2)
                    .drawRect(  renderObjects.decorativeBorder)
-                   .drawSprite(  renderObjects.seperator)
+                   .drawSprite(renderObjects.seperator)
                    .drawSprite(renderObjects.score1 )
                    .drawSprite(renderObjects.score2 );
                 if(player1Score == uint32_t(POINTS_TO_WIN)){
@@ -252,6 +263,7 @@ class Pong{
             ballVel = {-INIT_BALL_VEL_X, 0.0f};
             player1Score = 0;
             player2Score = 0;
+            winSoundHasPlayed = false;
         }
     private:
         GLFWwindow* createWindow(int w, int h){
@@ -297,6 +309,7 @@ class Pong{
             uint32_t player2Wins;
             uint32_t seperator;
         } textures;
+        bool winSoundHasPlayed = false;
 
         const float PLAYER_VEL = 200.0f;
         uint32_t player1Score = 0;
