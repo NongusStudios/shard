@@ -1,10 +1,12 @@
 #pragma once
 
 #include <memory>
-#include <map>
+#include <array>
+#include <queue>
 
 #include "../gfx/gfx.hpp"
 #include "../gfx/model.hpp"
+#include "camera.hpp"
 
 namespace shard{
     namespace r2d{
@@ -43,13 +45,14 @@ namespace shard{
                     VkCommandBuffer commandBuffer,
                     VkDescriptorSet constDescSet,
                     VkPipelineLayout pLayout,
-                    uint32_t frameIndex
+                    uint32_t frameIndex,
+                    const glm::vec2& zoom
                 );
                 void rotationDegrees(float deg){
                     rotation = glm::radians(deg);
                 }
 
-                glm::mat4 modelMatrix() const;
+                glm::mat4 modelMatrix(const glm::vec2& zoom) const;
 
                 glm::vec2  position;
                 float      rotation = 0.0f;
@@ -98,12 +101,13 @@ namespace shard{
                     VkCommandBuffer commandBuffer,
                     VkDescriptorSet constDescSet,
                     VkPipelineLayout pLayout,
-                    uint32_t frameIndex
+                    uint32_t frameIndex,
+                    const glm::vec2& zoom
                 );
                 void rotationDegrees(float deg){
                     rotation = glm::radians(deg);
                 }
-                glm::mat4 modelMatrix() const;
+                glm::mat4 modelMatrix(const glm::vec2& zoom) const;
 
                 glm::vec2  position;
                 float      rotation = 0.0f;
@@ -134,13 +138,17 @@ namespace shard{
                     gfx::Sampler sampler;
                 };
 
-                static constexpr uint32_t UBUFFER_POOL_SIZE = 5000*gfx::Swapchain::MAX_FRAMES_IN_FLIGHT;
+                static constexpr uint32_t MAX_RECTS    = 5000;
+                static constexpr uint32_t MAX_SPRITES  = 5000;
+                static constexpr uint32_t MAX_TEXTURES = 5000;
+                static constexpr uint32_t MAX_CAMERAS  = 100;
+                static constexpr uint32_t UBUFFER_POOL_SIZE = (MAX_RECTS  * gfx::Swapchain::MAX_FRAMES_IN_FLIGHT) +
+                                                              (MAX_SPRITES* gfx::Swapchain::MAX_FRAMES_IN_FLIGHT);
                 static constexpr float MAX_ZINDEX = 100.0f;
 
                 Renderer(
                     GLFWwindow* win,
                     VkExtent2D renderExtent,
-                    uint32_t texturePoolSize,
                     bool _vsync
                 );
                 shard_delete_copy_constructors(Renderer);
@@ -192,6 +200,12 @@ namespace shard{
                 Sprite& getSprite(uint32_t name);
                 void removeSprite(uint32_t name);
 
+                uint32_t addCamera(const glm::vec2& pos, const glm::vec2& zoom);
+                Camera& getCamera(uint32_t camera);
+                void removeCamera(uint32_t camera);
+                void resetCurrentCamera();
+                void setCurrentCamera(uint32_t camera);
+
                 Renderer& drawRect(uint32_t name);
                 Renderer& drawSprite(uint32_t name);
                 
@@ -201,7 +215,20 @@ namespace shard{
 
                 void setVsync(bool vsync);
 
-                glm::mat4 getProjectionMatrix();
+                uint32_t rectCount()    const {
+                    return counts.rect;
+                }
+                uint32_t textureCount() const {
+                    return counts.texture;
+                }
+                uint32_t spriteCount()  const {
+                    return counts.sprite;
+                }
+                uint32_t cameraCount()  const {
+                    return counts.camera;
+                }
+
+                glm::mat4 getProjectionMatrix() const;
                 void cleanup();
             private:
                 VkPipelineLayout 
@@ -235,13 +262,23 @@ namespace shard{
                 VkCommandBuffer currentCommandBuffer
                                 = VK_NULL_HANDLE;
                 struct{
-                    uint32_t rect    = 1;
-                    uint32_t texture = 1;
-                    uint32_t sprite  = 1;
+                    std::queue<uint32_t> rect;
+                    std::queue<uint32_t> texture;
+                    std::queue<uint32_t> sprite;
+                    std::queue<uint32_t> camera;
                 } names;
-                std::map<uint32_t, Rect> rects;
-                std::map<uint32_t, std::unique_ptr<Texture>> textures;
-                std::map<uint32_t, Sprite> sprites;
+                struct{
+                    uint32_t rect    = 0;
+                    uint32_t texture = 0;
+                    uint32_t sprite  = 0;
+                    uint32_t camera  = 0;
+                } counts;
+
+                std::array<Rect, MAX_RECTS> rects;
+                std::array<std::unique_ptr<Texture>, MAX_TEXTURES> textures;
+                std::array<Sprite, MAX_SPRITES> sprites;
+                std::array<Camera, MAX_CAMERAS> cameras;
+                uint32_t currentCamera = 0;
         };
     } // namespace r2d
 } // namespace shard

@@ -65,10 +65,11 @@ namespace shard{
             VkCommandBuffer commandBuffer,
             VkDescriptorSet constDescSet,
             VkPipelineLayout pLayout,
-            uint32_t frameIndex
+            uint32_t frameIndex,
+            const glm::vec2& zoom
         ){
             UBO ubo = {};
-            ubo.model = this->modelMatrix();
+            ubo.model = this->modelMatrix(zoom);
             ubo.color = color.normalized();
             ubo.hasBorder = hasBorder;
             ubo.borderSize = borderSize;
@@ -95,11 +96,11 @@ namespace shard{
                 _descSets
             );
         }
-        glm::mat4 Rect::modelMatrix() const {
+        glm::mat4 Rect::modelMatrix(const glm::vec2& zoom) const {
             glm::mat4 m = glm::mat4(1.0f);
-            m = glm::translate(m, {position, zindex});
+            m = glm::translate(m, {position*zoom, zindex});
             m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
-            m = glm::scale(m, {scale/2.0f, 0.0f});
+            m = glm::scale(m, {(scale/2.0f)*zoom, 0.0f});
             return m;
         }
 
@@ -151,10 +152,11 @@ namespace shard{
             VkCommandBuffer commandBuffer,
             VkDescriptorSet constDescSet,
             VkPipelineLayout pLayout,
-            uint32_t frameIndex
+            uint32_t frameIndex,
+            const glm::vec2& zoom
         ){
             UBO ubo = {};
-            ubo.model       = this->modelMatrix();
+            ubo.model       = this->modelMatrix(zoom);
             ubo.color       = color.normalized();
             ubo.srcRectPos  = srcRect.position;
             ubo.srcRectSize = srcRect.size;
@@ -173,11 +175,11 @@ namespace shard{
                 0, nullptr
             );
         }
-        glm::mat4 Sprite::modelMatrix() const {
+        glm::mat4 Sprite::modelMatrix(const glm::vec2& zoom) const {
             glm::mat4 m = glm::mat4(1.0f);
-            m = glm::translate(m, {position, zindex});
+            m = glm::translate(m, {position*zoom, zindex});
             m = glm::rotate(m, rotation, {0.0f, 0.0f, -1.0f});
-            m = glm::scale(m, {scale/2.0f, 0.0f});
+            m = glm::scale(m, {(scale/2.0f)*zoom, 0.0f});
             return m;
         }
 
@@ -191,7 +193,6 @@ namespace shard{
         Renderer::Renderer(
             GLFWwindow* win,
             VkExtent2D renderExtent,
-            uint32_t texturePoolSize,
             bool _vsync
         ):
             window{win},
@@ -203,7 +204,7 @@ namespace shard{
                 )
                 .addPoolSize(
                     VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                    texturePoolSize
+                    MAX_TEXTURES
                 )
                 .setMaxSets(gfx::Swapchain::MAX_FRAMES_IN_FLIGHT+UBUFFER_POOL_SIZE)
                 .setPoolFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
@@ -290,6 +291,19 @@ namespace shard{
                     .writeBuffer(0, &bufferInfo)
                     .build(constantDescSets[i]);
             }
+
+            for(uint32_t i = 0; i < MAX_RECTS; i++){
+                names.rect.push(i);
+            }
+            for(uint32_t i = 0; i < MAX_SPRITES; i++){
+                names.sprite.push(i);
+            }
+            for(uint32_t i = 0; i < MAX_TEXTURES; i++){
+                names.texture.push(i);
+            }
+            for(uint32_t i = 0; i < MAX_CAMERAS; i++){
+                names.camera.push(i);
+            }
         }
 
         bool Renderer::startFrame(const gfx::Color& color){
@@ -298,7 +312,8 @@ namespace shard{
             if((currentCommandBuffer = gfx.beginRenderPass(color))){
                 UBO ubo;
                 ubo.projection = getProjectionMatrix();
-                ubo.view = glm::mat4(1.0f);
+                if(currentCamera != 0) ubo.view = cameras[currentCamera].viewMatrix();
+                else ubo.view = glm::mat4(1.0f);
                 memcpy(
                     constantUniformBuffers[gfx.frameIndex()].mappedMemory(),
                     &ubo,
@@ -321,14 +336,16 @@ namespace shard{
             const gfx::Color& color,
             float zindex
         ){
-            rects[names.rect] = Rect(
+            uint32_t name = names.rect.front();
+            names.rect.pop();
+            rects[name] = Rect(
                 gfx, descPool,
                 layouts.rect, 0,
                 position, rotation, scale,
                 color, zindex
             );
-
-            return names.rect++;
+            counts.rect++;
+            return name;
         }
         uint32_t Renderer::addRect(
             const glm::vec2& position,
@@ -339,7 +356,9 @@ namespace shard{
             float borderSize,
             const gfx::Color& borderColor
         ){
-            rects[names.rect] = Rect(
+            uint32_t name = names.rect.front();
+            names.rect.pop();
+            rects[name] = Rect(
                 gfx, descPool,
                 layouts.rect, 0,
                 position, rotation, scale,
@@ -347,23 +366,27 @@ namespace shard{
                 true,
                 borderSize, borderColor
             );
-
-            return names.rect++;
+            counts.rect++;
+            return name;
         }
         Rect& Renderer::getRect(uint32_t name){
-            assert(rects.contains(name));
+            assert(name < MAX_RECTS);
             return rects[name];
         }
         void Renderer::removeRect(uint32_t name){
-            assert(rects.contains(name));
+            assert(name < MAX_RECTS);
             rects[name].cleanup(descPool);
-            rects.erase(name);
+            rects[name] = {};
+            names.rect.push(name);
+            counts.rect--;
         }
 
         uint32_t Renderer::addTexture(const char* filePath, VkFilter filter){
             gfx::Image tex = gfx.createTexture(filePath);
             uint32_t texMipMap = tex.mipMapLevels();
-            textures[names.texture] = std::make_unique<Texture>(
+            uint32_t name = names.texture.front();
+            names.texture.pop();
+            textures[name] = std::make_unique<Texture>(
                 tex,
                 gfx.createSampler(
                     filter,
@@ -376,15 +399,18 @@ namespace shard{
                     VK_SAMPLER_MIPMAP_MODE_LINEAR, texMipMap
                 )
             );
-            return names.texture++;
+            counts.texture++;
+            return name;
         }
         Renderer::Texture& Renderer::getTexture(uint32_t name){
-            assert(textures.contains(name));
+            assert(name < MAX_TEXTURES);
             return *textures[name];
         }
         void Renderer::removeTexture(uint32_t name){
-            assert(textures.contains(name));
-            textures.erase(name);
+            assert(name < MAX_TEXTURES);
+            textures[name].reset();
+            names.texture.push(name);
+            counts.texture--;
         }
 
         uint32_t Renderer::addSprite(
@@ -396,7 +422,9 @@ namespace shard{
             float zindex
         ){
             Texture& tex = getTexture(texture);
-            sprites[names.sprite] = Sprite(
+            uint32_t name = names.sprite.front();
+            names.sprite.pop();
+            sprites[name] = Sprite(
                 gfx,
                 descPool,
                 layouts.sprite,
@@ -407,7 +435,8 @@ namespace shard{
                 {0.5f, 0.5f},
                 {1.0f, 1.0f}
             );
-            return names.sprite++;
+            counts.sprite++;
+            return name;
         }
         uint32_t Renderer::addSprite(
             uint32_t texture,
@@ -420,7 +449,9 @@ namespace shard{
             const glm::vec2& srcSize
         ){
             Texture& tex = getTexture(texture);
-            sprites[names.sprite] = Sprite(
+            uint32_t name = names.sprite.front();
+            names.sprite.pop();
+            sprites[name] = Sprite(
                 gfx,
                 descPool,
                 layouts.sprite,
@@ -431,17 +462,47 @@ namespace shard{
                 srcPos,
                 srcSize
             );
-            return names.sprite++;
+            counts.sprite++;
+            return name;
         }
         Sprite& Renderer::getSprite(uint32_t sprite){
-            assert(sprites.contains(sprite));
+            assert(sprite < MAX_SPRITES);
             return sprites[sprite];
         }
         void Renderer::removeSprite(uint32_t sprite){
-            assert(sprites.contains(sprite));
+            assert(sprite < MAX_SPRITES);
             Sprite& s = getSprite(sprite);
             s.cleanup(descPool);
-            sprites.erase(sprite);
+            sprites[sprite] = {};
+            names.sprite.push(sprite);
+            counts.sprite--;
+        }
+
+        uint32_t Renderer::addCamera(const glm::vec2& pos, const glm::vec2& zoom){
+            uint32_t name = names.camera.front();
+            names.camera.pop();
+            cameras[name] = Camera(
+                pos, zoom
+            );
+            counts.camera++;
+            return name;
+        }
+        Camera& Renderer::getCamera(uint32_t camera){
+            assert(camera < MAX_CAMERAS);
+            return cameras[camera];
+        }
+        void Renderer::removeCamera(uint32_t camera){
+            assert(camera < MAX_CAMERAS);
+            cameras[camera] = {};
+            names.camera.push(camera);
+            counts.camera--;
+        }
+        void Renderer::resetCurrentCamera(){
+            currentCamera = 0;
+        }
+        void Renderer::setCurrentCamera(uint32_t camera){
+            assert(camera < MAX_CAMERAS);
+            currentCamera = camera;
         }
 
         Renderer& Renderer::drawRect(uint32_t name){
@@ -452,7 +513,8 @@ namespace shard{
                 currentCommandBuffer,
                 constantDescSets[gfx.frameIndex()],
                 layouts.plRect,
-                gfx.frameIndex()
+                gfx.frameIndex(),
+                (currentCamera != 0) ? getCamera(currentCamera).zoom : glm::vec2{1.0f, 1.0f}
             );
             pipelines.rect.bind(currentCommandBuffer, 
                 VK_PIPELINE_BIND_POINT_GRAPHICS
@@ -470,7 +532,8 @@ namespace shard{
                 currentCommandBuffer,
                 constantDescSets[gfx.frameIndex()],
                 layouts.plSprite,
-                gfx.frameIndex()
+                gfx.frameIndex(),
+                (currentCamera != 0) ? getCamera(currentCamera).zoom : glm::vec2{1.0f, 1.0f}
             );
             pipelines.sprite.bind(currentCommandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS
@@ -485,13 +548,10 @@ namespace shard{
             gfx.setVsync(vsync);
         }
 
-        glm::mat4 Renderer::getProjectionMatrix(){
-            // temp begin
-            auto winExtent = getWindowExtent(window);
-            // temp end
+        glm::mat4 Renderer::getProjectionMatrix() const {
             return glm::ortho(
-                -float(winExtent.width /2),  float(winExtent.width /2),
-                 float(winExtent.height/2), -float(winExtent.height/2),
+                -float(extent.width /2),  float(extent.width /2),
+                 float(extent.height/2), -float(extent.height/2),
                 -MAX_ZINDEX,                 MAX_ZINDEX
             );
         }

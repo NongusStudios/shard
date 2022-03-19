@@ -19,7 +19,7 @@ class Pong{
         Pong():
             window{createWindow(WIDTH, HEIGHT)},
             input{window},
-            r2d{window, {WIDTH, HEIGHT}, 4, true}
+            r2d{window, {WIDTH, HEIGHT}, true}
         {
             sound.setVolume(0.5f);
 

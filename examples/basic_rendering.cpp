@@ -9,7 +9,7 @@ class BasicRendering{
 
         BasicRendering():
             window{createWindow(WIDTH, HEIGHT)},
-            r2d{window, {WIDTH, HEIGHT}, 50, true}
+            r2d{window, {WIDTH, HEIGHT}, true}
         {
             shard::time::updateTime(time);
 

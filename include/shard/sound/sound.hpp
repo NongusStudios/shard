@@ -1,13 +1,16 @@
 #pragma once
 
 #include <string>
-#include <map>
+#include <array>
+#include <queue>
 
 #include <miniaudio.h>
 
 namespace shard{
     class Sound{
         public:
+            static constexpr uint32_t MAX_SOUNDS = 1000;
+
             enum class Result{
                 SUCCESS = 0,
                 FAILED  = 1
@@ -36,8 +39,8 @@ namespace shard{
             }
 
             ma_engine soundEngine = {};
-            std::map<uint32_t, ma_sound> sounds = {};
-            uint32_t currentSoundName = 1;
+            std::array<ma_sound, MAX_SOUNDS> sounds = {};
+            std::queue<uint32_t> availableSoundNames;
             float engineVolume = 1.0f;
     };
 } // namespace shard
