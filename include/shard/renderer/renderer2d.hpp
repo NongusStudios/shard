@@ -201,10 +201,10 @@ namespace shard{
                 void removeSprite(uint32_t name);
 
                 uint32_t addCamera(const glm::vec2& pos, const glm::vec2& zoom);
-                Camera& getCamera(uint32_t camera);
-                void removeCamera(uint32_t camera);
+                Camera& getCamera(uint32_t name);
+                void removeCamera(uint32_t name);
                 void resetCurrentCamera();
-                void setCurrentCamera(uint32_t camera);
+                void setCurrentCamera(uint32_t name);
 
                 Renderer& drawRect(uint32_t name);
                 Renderer& drawSprite(uint32_t name);
@@ -275,9 +275,13 @@ namespace shard{
                 } counts;
 
                 std::array<Rect, MAX_RECTS> rects;
+                std::array<bool, MAX_RECTS> rectsAlloc = {false};
                 std::array<std::unique_ptr<Texture>, MAX_TEXTURES> textures;
+                std::array<bool, MAX_TEXTURES> texturesAlloc = {false};
                 std::array<Sprite, MAX_SPRITES> sprites;
+                std::array<bool, MAX_SPRITES> spritesAlloc   = {false};
                 std::array<Camera, MAX_CAMERAS> cameras;
+                std::array<bool, MAX_CAMERAS> camerasAlloc   = {false};
                 uint32_t currentCamera = 0;
         };
     } // namespace r2d

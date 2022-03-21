@@ -20,6 +20,7 @@ namespace shard{
             ~Sound();
 
             uint32_t load(const std::string& filePath);
+            void     unload(uint32_t sound);
 
             bool isPlaying(uint32_t sound);
             bool isLooping(uint32_t sound);
@@ -39,7 +40,8 @@ namespace shard{
             }
 
             ma_engine soundEngine = {};
-            std::array<ma_sound, MAX_SOUNDS> sounds = {};
+            std::array<ma_sound, MAX_SOUNDS> sounds      = {};
+            std::array<bool, MAX_SOUNDS>     soundsAlloc = {false};
             std::queue<uint32_t> availableSoundNames;
             float engineVolume = 1.0f;
     };

@@ -312,7 +312,7 @@ namespace shard{
             if((currentCommandBuffer = gfx.beginRenderPass(color))){
                 UBO ubo;
                 ubo.projection = getProjectionMatrix();
-                if(currentCamera != 0) ubo.view = cameras[currentCamera].viewMatrix();
+                if(currentCamera < MAX_CAMERAS) ubo.view = cameras[currentCamera].viewMatrix();
                 else ubo.view = glm::mat4(1.0f);
                 memcpy(
                     constantUniformBuffers[gfx.frameIndex()].mappedMemory(),
@@ -344,6 +344,7 @@ namespace shard{
                 position, rotation, scale,
                 color, zindex
             );
+            rectsAlloc[name] = true;
             counts.rect++;
             return name;
         }
@@ -356,27 +357,22 @@ namespace shard{
             float borderSize,
             const gfx::Color& borderColor
         ){
-            uint32_t name = names.rect.front();
-            names.rect.pop();
-            rects[name] = Rect(
-                gfx, descPool,
-                layouts.rect, 0,
-                position, rotation, scale,
-                color, zindex,
-                true,
-                borderSize, borderColor
-            );
-            counts.rect++;
+            uint32_t name = addRect(position, rotation, scale, color, zindex);
+            Rect& r = getRect(name);
+            r.hasBorder   = true;
+            r.borderSize  = borderSize;
+            r.borderColor = borderColor;
             return name;
         }
         Rect& Renderer::getRect(uint32_t name){
-            assert(name < MAX_RECTS);
+            assert(name < MAX_RECTS && rectsAlloc[name]);
             return rects[name];
         }
         void Renderer::removeRect(uint32_t name){
-            assert(name < MAX_RECTS);
+            assert(name < MAX_RECTS && rectsAlloc[name]);
             rects[name].cleanup(descPool);
             rects[name] = {};
+            rectsAlloc[name] = false;
             names.rect.push(name);
             counts.rect--;
         }
@@ -399,16 +395,18 @@ namespace shard{
                     VK_SAMPLER_MIPMAP_MODE_LINEAR, texMipMap
                 )
             );
+            texturesAlloc[name] = true;
             counts.texture++;
             return name;
         }
         Renderer::Texture& Renderer::getTexture(uint32_t name){
-            assert(name < MAX_TEXTURES);
+            assert(name < MAX_TEXTURES && texturesAlloc[name]);
             return *textures[name];
         }
         void Renderer::removeTexture(uint32_t name){
-            assert(name < MAX_TEXTURES);
+            assert(name < MAX_TEXTURES && texturesAlloc[name]);
             textures[name].reset();
+            texturesAlloc[name] = false;
             names.texture.push(name);
             counts.texture--;
         }
@@ -435,6 +433,7 @@ namespace shard{
                 {0.5f, 0.5f},
                 {1.0f, 1.0f}
             );
+            spritesAlloc[name] = true;
             counts.sprite++;
             return name;
         }
@@ -448,32 +447,22 @@ namespace shard{
             const glm::vec2& srcPos,
             const glm::vec2& srcSize
         ){
-            Texture& tex = getTexture(texture);
-            uint32_t name = names.sprite.front();
-            names.sprite.pop();
-            sprites[name] = Sprite(
-                gfx,
-                descPool,
-                layouts.sprite,
-                tex.image, tex.sampler,
-                0, 1,
-                position, rotation, scale,
-                color, zindex,
-                srcPos,
-                srcSize
-            );
-            counts.sprite++;
+            uint32_t name = addSprite(texture, position, rotation, scale, color, zindex);
+            Sprite& s = getSprite(name);
+            s.srcRect.position = srcPos;
+            s.srcRect.size = srcSize;
             return name;
         }
         Sprite& Renderer::getSprite(uint32_t sprite){
-            assert(sprite < MAX_SPRITES);
+            assert(sprite < MAX_SPRITES && spritesAlloc[sprite]);
             return sprites[sprite];
         }
         void Renderer::removeSprite(uint32_t sprite){
-            assert(sprite < MAX_SPRITES);
+            assert(sprite < MAX_SPRITES && spritesAlloc[sprite]);
             Sprite& s = getSprite(sprite);
             s.cleanup(descPool);
             sprites[sprite] = {};
+            spritesAlloc[sprite] = false;
             names.sprite.push(sprite);
             counts.sprite--;
         }
@@ -484,24 +473,26 @@ namespace shard{
             cameras[name] = Camera(
                 pos, zoom
             );
+            camerasAlloc[name] = true;
             counts.camera++;
             return name;
         }
         Camera& Renderer::getCamera(uint32_t camera){
-            assert(camera < MAX_CAMERAS);
+            assert(camera < MAX_CAMERAS && camerasAlloc[camera]);
             return cameras[camera];
         }
         void Renderer::removeCamera(uint32_t camera){
-            assert(camera < MAX_CAMERAS);
+            assert(camera < MAX_CAMERAS && camerasAlloc[camera]);
             cameras[camera] = {};
+            camerasAlloc[camera] = false;
             names.camera.push(camera);
             counts.camera--;
         }
         void Renderer::resetCurrentCamera(){
-            currentCamera = 0;
+            currentCamera = MAX_CAMERAS;
         }
         void Renderer::setCurrentCamera(uint32_t camera){
-            assert(camera < MAX_CAMERAS);
+            assert(camera < MAX_CAMERAS && camerasAlloc[camera]);
             currentCamera = camera;
         }
 

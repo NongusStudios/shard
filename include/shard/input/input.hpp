@@ -181,7 +181,6 @@ namespace shard {
         static const MouseButton MB_LEFT   = MouseButton::B1;
         static const MouseButton MB_RIGHT  = MouseButton::B2;
         static const MouseButton MB_MIDDLE = MouseButton::B3;
-
     } // namespace input
 
     class Input{

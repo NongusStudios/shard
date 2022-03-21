@@ -33,12 +33,13 @@ class Pong{
             actions.player2Up    = input.addAction(shard::Key::UP,   0);
             actions.player2Down  = input.addAction(shard::Key::DOWN, 0);
 
-            actions.reset        = input.addAction(shard::Key::R, 0);
+            actions.reset        = input.addAction(shard::Key::R,      0);
+            actions.exit         = input.addAction(shard::Key::ESCAPE, 0);
 
             textures.score       = r2d.addTexture("res/scoreNumbers.png", VK_FILTER_NEAREST);
             textures.player1Wins = r2d.addTexture("res/player1Wins.png",  VK_FILTER_NEAREST);
             textures.player2Wins = r2d.addTexture("res/player2Wins.png",  VK_FILTER_NEAREST);
-            textures.seperator   = r2d.addTexture("res/pongSep.png", VK_FILTER_NEAREST);
+            textures.seperator   = r2d.addTexture("res/pongSep.png",      VK_FILTER_NEAREST);
             
             renderObjects.seperator = r2d.addSprite(textures.seperator,
                 {0.0f, -float(TOP_PADDING)/2.0f},
@@ -144,6 +145,12 @@ class Pong{
                     if(input.actionPressed(actions.player2Up) != shard::input::Result::TRUE)
                         player2Pos.y -= PLAYER_VEL * time.dt;
                     break;
+                default:
+                    break;
+            }
+            switch(input.actionJustPressed(actions.exit)){
+                case shard::input::Result::TRUE:
+                    glfwSetWindowShouldClose(window, true);
                 default:
                     break;
             }
@@ -290,6 +297,7 @@ class Pong{
             uint32_t player1Down;
             uint32_t player2Down;
             uint32_t reset;
+            uint32_t exit;
         } actions;
 
         struct{

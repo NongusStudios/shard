@@ -13,6 +13,9 @@ namespace shard{
         }
     }
     Sound::~Sound(){
+        for(const auto& alloc : soundsAlloc){
+            
+        }
         ma_engine_uninit(&soundEngine);
     }
 
@@ -27,23 +30,30 @@ namespace shard{
                 &sound
             ) == MA_SUCCESS
         );
+        soundsAlloc[name] = true;
         return name;
+    }
+    void Sound::unload(uint32_t sound){
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
+        ma_sound_uninit(&sounds[sound]);
+        sounds[sound] = {};
+        soundsAlloc[sound] = false;
     }
 
     bool Sound::isPlaying(uint32_t sound){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         return ma_sound_is_playing(&sounds[sound]);
     }
     bool Sound::isLooping(uint32_t sound){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         return ma_sound_is_looping(&sounds[sound]);
     }
     void Sound::setLooping(uint32_t sound, bool isLooping){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         ma_sound_set_looping(&sounds[sound], isLooping);
     }
     void Sound::setVolume(uint32_t sound, float volume){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         ma_sound_set_volume(&sounds[sound], volume);
     }
     Sound::Result Sound::setVolume(float volume){
@@ -53,7 +63,7 @@ namespace shard{
         );
     }
     float Sound::getVolume(uint32_t sound){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         return ma_sound_get_volume(&sounds[sound]);
     }
     float Sound::getVolume(){
@@ -65,7 +75,7 @@ namespace shard{
         );
     }
     Sound::Result Sound::play(uint32_t sound){
-        assert(sound < MAX_SOUNDS);
+        assert(sound < MAX_SOUNDS && soundsAlloc[sound]);
         auto& s = sounds[sound];
         if(!ma_sound_is_playing(&s)){
             return convertMaResultToResult(
