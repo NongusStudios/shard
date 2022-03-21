@@ -24,9 +24,10 @@ namespace shard{
             uint32_t _id = MAX_ENTITIES;
     };
 
-    class Component{
+    struct Component{
         public:
-            virtual void create(ECS* ecs, const Entity& entity, const Component* data){}
+            virtual void create(ECS& ecs, const Entity& entity){}
+            virtual void destroy(ECS& ecs, const Entity& entity){}
     };
 
     template<typename T>
@@ -45,7 +46,7 @@ namespace shard{
                 }
             }
 
-            ComponentArray<T>& add(const Entity& entity){
+            ComponentArray<T>& add(ECS& ecs, const Entity& entity){
                 assert(entity.valid());
                 assert(!contains(entity));
 
@@ -54,6 +55,8 @@ namespace shard{
 
                 entityToIndex[entity.id()] = idx;
                 indexToEntity[idx] = entity.id();
+
+                components[idx].create(ecs, entity);
                 
                 return *this;
             }
@@ -73,12 +76,13 @@ namespace shard{
                 size_t idx = entityToIndex[entity.id()];
                 return components[idx];
             }
-            ComponentArray<T>& remove(const Entity& entity){
+            ComponentArray<T>& remove(ECS& ecs, const Entity& entity){
                 assert(entity.valid());
                 assert(contains(entity));
 
                 size_t idx = entityToIndex[entity.id()];
 
+                components[idx].destroy(ecs, entity);
                 components[idx] = {};
 
                 entityToIndex.erase(entity.id());
@@ -96,10 +100,10 @@ namespace shard{
                 return entityToIndex.contains(entity.id());
             }
 
-            std::vector<std::pair<Entity, T&>> getComponents(){
-                std::vector<T&> vec = {};
+            std::vector<std::pair<Entity, T*>> getComponents(){
+                std::vector<std::pair<Entity, T*>> vec = {};
                 for(auto& [entity, index] : entityToIndex){
-                    vec.push_back({Entity{entity}, components[index]});
+                    vec.push_back({Entity{entity}, &components[index]});
                 }
                 return vec;
             }
@@ -122,15 +126,38 @@ namespace shard{
             }
 
             Entity addEntity(){
-                uint32_t id =  availableEntities.front();
+                uint32_t id = availableEntities.front();
                 availableEntities.pop();
+                allocatedEntities[id] = id;
                 return id;
             }
             ECS& removeEntity(const Entity& entity){
                 assert(entity.valid());
                 assert(allocatedEntities.contains(entity.id()));
+                assert(!entityConnections.contains(entity.id()));
                 availableEntities.push(entity.id());
+                allocatedEntities.erase(entity.id());
                 return  *this;
+            }
+
+            template<typename T>
+            ECS& insertComponent(const Entity& entity, const std::string& componentArray){
+                assert(allocatedEntities.contains(entity.id()));
+                ComponentArray<T>& arr = getComponentArray<T>(componentArray);
+                arr.add(*this, entity);
+                entityConnections[entity.id()][componentArray];
+                return *this;
+            }
+            template<typename T>
+            ECS& removeComponent(const Entity& entity, const std::string& componentArray){
+                assert(allocatedEntities.contains(entity.id()));
+                assert(entityConnections.contains(entity.id()));
+                assert(entityConnections[entity.id()].contains(componentArray));
+                ComponentArray<T>& arr = getComponentArray<T>(componentArray);
+                arr.remove(*this, entity);
+                entityConnections[entity.id()].erase(componentArray);
+                if(entityConnections[entity.id()].size() == 0) entityConnections.erase(entity.id());
+                return *this;
             }
 
             template<typename T>
@@ -176,16 +203,25 @@ namespace shard{
                 return *reinterpret_cast<ComponentArray<T>*>(componentArrays[name]);
             }
 
-            void update(){
-
+            template<typename T>
+            ECS& update(const std::string& systemName){
+                assert(systems.contains(systemName));
+                auto& [system, componentArrayName] = systems[systemName];
+                std::vector<std::pair<Entity, T*>> components = getComponentArray<T>(componentArrayName)
+                                                                .getComponents();
+                for(auto [entity, component] : components){
+                    system(*this, entity, reinterpret_cast<Component*>(component));
+                }
+                return *this;
             }
         private:
             std::queue<uint32_t> availableEntities;
             std::unordered_map<uint32_t, uint32_t> allocatedEntities;
+            std::unordered_map<uint32_t, std::unordered_map<std::string, uint8_t>> entityConnections;
 
-            std::unordered_map<std::string, void*> resources;
+            std::unordered_map<std::string, void*>       resources;
             std::unordered_map<std::string, const void*> constResources;
-            std::unordered_map<std::string, void*> componentArrays;
+            std::unordered_map<std::string, void*>       componentArrays;
             std::unordered_map<std::string, std::pair<System, std::string>> systems;
     };
 } // namespace shard

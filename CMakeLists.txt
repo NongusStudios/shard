@@ -43,7 +43,7 @@ set(MONKEY examples/monkey.cpp)
 set(BASIC_RENDERING examples/basic_rendering.cpp)
 set(PONG examples/pong.cpp)
 set(BREAKOUT examples/breakout/breakout.cpp)
-set(CURRENT_EXAMPLE ${PONG})
+set(CURRENT_EXAMPLE ${BREAKOUT})
 
 set(OUT out)
 add_executable(${OUT} ${CURRENT_EXAMPLE})
