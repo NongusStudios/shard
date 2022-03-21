@@ -304,6 +304,9 @@ namespace shard{
             for(uint32_t i = 0; i < MAX_CAMERAS; i++){
                 names.camera.push(i);
             }
+
+            defaultCamera = addCamera({0.0f, 0.0f}, {1.0f, 1.0f});
+            setCurrentCamera(defaultCamera);
         }
 
         bool Renderer::startFrame(const gfx::Color& color){
@@ -312,8 +315,7 @@ namespace shard{
             if((currentCommandBuffer = gfx.beginRenderPass(color))){
                 UBO ubo;
                 ubo.projection = getProjectionMatrix();
-                if(currentCamera < MAX_CAMERAS) ubo.view = cameras[currentCamera].viewMatrix();
-                else ubo.view = glm::mat4(1.0f);
+                ubo.view = cameras[currentCamera].viewMatrix();
                 memcpy(
                     constantUniformBuffers[gfx.frameIndex()].mappedMemory(),
                     &ubo,
@@ -489,7 +491,7 @@ namespace shard{
             counts.camera--;
         }
         void Renderer::resetCurrentCamera(){
-            currentCamera = MAX_CAMERAS;
+            currentCamera = defaultCamera;
         }
         void Renderer::setCurrentCamera(uint32_t camera){
             assert(camera < MAX_CAMERAS && camerasAlloc[camera]);

@@ -282,6 +282,7 @@ namespace shard{
                 std::array<bool, MAX_SPRITES> spritesAlloc   = {false};
                 std::array<Camera, MAX_CAMERAS> cameras;
                 std::array<bool, MAX_CAMERAS> camerasAlloc   = {false};
+                uint32_t defaultCamera = 0;
                 uint32_t currentCamera = 0;
         };
     } // namespace r2d
