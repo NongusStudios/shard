@@ -205,7 +205,6 @@ namespace shard{
                 void removeCamera(uint32_t name);
                 void resetCurrentCamera();
                 void setCurrentCamera(uint32_t name);
-
                 Renderer& drawRect(uint32_t name);
                 Renderer& drawSprite(uint32_t name);
                 

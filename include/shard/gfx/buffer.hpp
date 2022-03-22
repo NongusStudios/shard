@@ -56,9 +56,9 @@ namespace shard{
                     vmaUnmapMemory(device.allocator(), _allocation);
                     _mapped = nullptr;
                 }
-                void bindVertex(VkCommandBuffer commandBuffer){
+                void bindVertex(VkCommandBuffer commandBuffer, uint32_t firstBinding=0){
                     VkDeviceSize offset = 0;
-                    vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_buffer, &offset);
+                    vkCmdBindVertexBuffers(commandBuffer, firstBinding, 1, &_buffer, &offset);
                 }
                 void bindIndex(VkCommandBuffer commandBuffer, VkIndexType type){
                     vkCmdBindIndexBuffer(commandBuffer, _buffer, 0, type);
