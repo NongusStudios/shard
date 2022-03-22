@@ -42,7 +42,7 @@ set(MODERN_ART examples/modern_art.cpp)
 set(MONKEY examples/monkey.cpp)
 set(BASIC_RENDERING examples/basic_rendering.cpp)
 set(PONG examples/pong.cpp)
-set(BREAKOUT examples/breakout/breakout.cpp)
+set(BREAKOUT examples/breakout.cpp)
 set(CURRENT_EXAMPLE ${BREAKOUT})
 
 set(OUT out)

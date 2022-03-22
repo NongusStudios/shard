@@ -372,6 +372,7 @@ namespace shard{
         }
         void Renderer::removeRect(uint32_t name){
             assert(name < MAX_RECTS && rectsAlloc[name]);
+            gfx.device().waitIdle();
             rects[name].cleanup(descPool);
             rects[name] = {};
             rectsAlloc[name] = false;
@@ -407,6 +408,7 @@ namespace shard{
         }
         void Renderer::removeTexture(uint32_t name){
             assert(name < MAX_TEXTURES && texturesAlloc[name]);
+            gfx.device().waitIdle();
             textures[name].reset();
             texturesAlloc[name] = false;
             names.texture.push(name);
@@ -461,6 +463,7 @@ namespace shard{
         }
         void Renderer::removeSprite(uint32_t sprite){
             assert(sprite < MAX_SPRITES && spritesAlloc[sprite]);
+            gfx.device().waitIdle();
             Sprite& s = getSprite(sprite);
             s.cleanup(descPool);
             sprites[sprite] = {};

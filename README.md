@@ -9,7 +9,9 @@ some basic games are still possible without too much pain.
 
 # Examples
 > [Pong](examples/pong.cpp)<br>
-> ![Alt text](examples/pong.png "Pong Example")
+> > ![Alt text](examples/pong.png "Pong Example")
+> [Breakout](examples/breakout.cpp)<br>
+> > ![Alt text](examples/breakout.png "Breakout Example")
 
 # License
 Shard is under the Apache License. [LICENSE](LICENSE)
