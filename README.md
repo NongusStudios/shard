@@ -4,8 +4,6 @@ Shard is a 2D game engine built with nothing but Vulkan and C++20 (
     [VMA](https://gpuopen.com/vulkan-memory-allocator/),
     and [GLM](https://github.com/g-truc/glm)
 ).<br>
-Right now the engine is still hugely a work in progress, but in its current state
-some basic games are still possible without too much pain.
 
 # Examples
 > [Pong](examples/pong.cpp)<br>
