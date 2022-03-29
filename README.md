@@ -6,13 +6,13 @@ Shard is a 2D game engine built with nothing but Vulkan and C++20 (
 ).<br>
 
 # Examples
-> [Triangle](examples/01-triangle)
+## [Triangle](examples/01-triangle)
 > ![Alt text](examples/01-triangle/output.png "Triangle")
-> [Cube](examples/02-cube)
+## [Cube](examples/02-cube)
 > ![Alt text](examples/02-cube/output.png "Cube")
-> [Texture](examples/03-texture)
+## [Texture](examples/03-texture)
 > ![Alt text](examples/03-texture/output.png "Texture")
-> [Model](examples/04-model)
+## [Model](examples/04-model)
 > ![Alt text](examples/04-model/output.png "Monkey")
 
 # License
