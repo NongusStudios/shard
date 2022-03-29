@@ -1,6 +1,6 @@
-add_executable(out main.cpp)
+add_executable(01.out main.cpp)
 
-target_link_libraries(out
+target_link_libraries(01.out
     dl
     vulkan
     glfw

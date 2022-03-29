@@ -6,7 +6,7 @@ layout (location = 2) in vec3 inNormal;
 
 layout (location = 0) out vec4 fragColor;
 
-const vec3 sunPos = vec3(0.0, 5.0, 0.0);
+const vec3 sunPos = vec3(0.8, -1.0, 0.8);
 const vec3 sunColor = vec3(0.9, 0.9, 0.9);
 const vec3 ambientColor = vec3(0.5, 0.5, 0.5);
 const vec3 viewDir = vec3(0.0, 0.0, 0.0);

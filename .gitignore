@@ -1,7 +1,4 @@
-*.o
+/build
 *.exe
 *.spv
-*.a
-/out
-/build
-
+*.out
