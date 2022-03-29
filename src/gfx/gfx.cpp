@@ -139,6 +139,15 @@ namespace shard{
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
         }
+        Buffer Graphics::createBuffer(
+            size_t sizeb,
+            VkBufferUsageFlags usageFlag,
+            VmaMemoryUsage memUsage,
+            VkMemoryPropertyFlags memProps,
+            const void* data
+        ){
+            return Buffer(device(), sizeb, data, usageFlag, memUsage, memProps);
+        }
         Image Graphics::createTexture(const char* filePath){
             return Image(*_device, filePath);
         }
@@ -206,6 +215,42 @@ namespace shard{
                 bColor, mipMode,
                 mipLevels
             );
+        }
+        VkPipelineLayout Graphics::createPipelineLayout(
+            const std::vector<VkPushConstantRange>& ranges,
+            const std::vector<DescriptorSetLayout*>& layouts
+        ){
+            std::vector<VkDescriptorSetLayout> rawLayouts(layouts.size());
+            size_t i = 0;
+            for(auto& layout : layouts){
+                assert(layout != nullptr);
+                rawLayouts[i] = layout->layout();
+                i++;
+            }
+
+            VkPipelineLayoutCreateInfo cinfo = {};
+            cinfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            cinfo.pushConstantRangeCount = uint32_t(ranges.size());
+            cinfo.setLayoutCount         = uint32_t(layouts.size());
+            cinfo.pPushConstantRanges    = ranges.data();
+            cinfo.pSetLayouts            = rawLayouts.data();
+
+            VkPipelineLayout pl = VK_NULL_HANDLE;
+            shard_abort_ifnot(
+                vkCreatePipelineLayout(_device->device(), &cinfo, nullptr, &pl)
+                == VK_SUCCESS
+            );
+            return pl;
+        }
+        void Graphics::destroyPipelineLayout(VkPipelineLayout& layout){
+            vkDestroyPipelineLayout(_device->device(), layout, nullptr);
+            layout = VK_NULL_HANDLE;
+        }
+        DescriptorPool::Builder Graphics::createDescriptorPoolBuilder(){
+            return DescriptorPool::Builder(device());
+        }
+        DescriptorSetLayout::Builder Graphics::createDescriptorSetLayoutBuilder(){
+            return DescriptorSetLayout::Builder(device());
         }
 
         void Graphics::setVsync(bool vsync){

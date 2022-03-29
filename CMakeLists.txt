@@ -13,8 +13,6 @@ else()
     add_compile_options(-Wall -pedantic)
 endif()
 
-set(GLFW_LIB ${CMAKE_SOURCE_DIR}/build/lib/glfw/src/libglfw3.a)
-
 include_directories(
     lib/glfw/include
     lib/glm
@@ -38,22 +36,11 @@ add_library(${SHARD_LIB}
     ${SHARD_SRC}
 )
 
-set(MODERN_ART examples/modern_art.cpp)
-set(MONKEY examples/monkey.cpp)
-set(BASIC_RENDERING examples/basic_rendering.cpp)
-set(PONG examples/pong.cpp)
-set(BREAKOUT examples/breakout.cpp)
-set(CURRENT_EXAMPLE ${BREAKOUT})
-
-set(OUT out)
-add_executable(${OUT} ${CURRENT_EXAMPLE})
-
-target_link_libraries(${OUT}
-    dl
-    vulkan
-    ${GLFW_LIB}
-    ${SHARD_LIB}
-)
+# Uncomment the example you want to build
+#add_subdirectory(examples/01-triangle)
+#add_subdirectory(examples/02-cube)
+#add_subdirectory(examples/03-texture)
+#add_subdirectory(examples/04-model)
 
 # Compile Shaders
 file(GLOB GLSL_FILES 

@@ -71,6 +71,14 @@ namespace shard{
                 Buffer createVertexBuffer(size_t size, const void* data);
                 Buffer createIndexBuffer(size_t size, const void* data);
                 Buffer createUniformBuffer(size_t size, const void* data);
+                Buffer createBuffer(
+                    size_t sizeb,
+                    VkBufferUsageFlags usageFlag,
+                    VmaMemoryUsage memUsage,
+                    VkMemoryPropertyFlags memProps,
+                    const void* data=nullptr
+                );
+                
                 Image createTexture(const char* filePath);
                 // Pixel format must be in VK_FORMAT_R8G8B8A8_BIT
                 Image createTexture(uint32_t w, uint32_t h, const void* pixels);
@@ -101,6 +109,14 @@ namespace shard{
                     VkSamplerMipmapMode mipMode,
                     uint32_t mipLevels
                 );
+                VkPipelineLayout createPipelineLayout(
+                    const std::vector<VkPushConstantRange>& ranges,
+                    const std::vector<DescriptorSetLayout*>& layouts
+                );
+                void destroyPipelineLayout(VkPipelineLayout& layout);
+
+                DescriptorPool::Builder createDescriptorPoolBuilder();
+                DescriptorSetLayout::Builder createDescriptorSetLayoutBuilder();
 
                 void setVsync(bool _vsync);
 

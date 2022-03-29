@@ -13,8 +13,12 @@ namespace shard{
         }
     }
     Sound::~Sound(){
+        size_t i = 0;
         for(const auto& alloc : soundsAlloc){
-            
+            if(alloc){
+                ma_sound_uninit(&sounds[i]);
+            }
+            i++;
         }
         ma_engine_uninit(&soundEngine);
     }
