@@ -59,4 +59,6 @@ int main(){
         }
     }
     gfx.device().waitIdle();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }

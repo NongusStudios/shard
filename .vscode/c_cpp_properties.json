@@ -9,7 +9,9 @@
                 "${workspaceFolder}/lib/glfw/include",
                 "${workspaceFolder}/lib/vma/include",
                 "${workspaceFolder}/lib/glm",
-                "${workspaceFolder}/lib/shardExtraDeps"
+                "${workspaceFolder}/lib/shardExtraDeps",
+                "${workspaceFolder}/lib/imgui",
+                "${workspaceFolder}/lib/imgui/backends"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

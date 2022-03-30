@@ -88,4 +88,7 @@ int main(){
 
     gfx.device().waitIdle();
     gfx.destroyPipelineLayout(pipelineLayout);
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }

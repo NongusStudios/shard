@@ -19,6 +19,8 @@ include_directories(
     lib/stb
     lib/vma/include
     lib/shardExtraDeps
+    lib/imgui
+    lib/imgui/backends
     include
 )
 file(GLOB SHARD_SRC
@@ -30,10 +32,14 @@ file(GLOB SHARD_SRC
     src/**/*.cpp
     src/**/**/*.cpp
     src/**/**/**/*.cpp
+
+    lib/imgui/*.cpp
 )
 set(SHARD_LIB shard)
 add_library(${SHARD_LIB}
     ${SHARD_SRC}
+    lib/imgui/backends/imgui_impl_glfw.cpp
+    lib/imgui/backends/imgui_impl_vulkan.cpp
 )
 
 # Uncomment the example you want to build
@@ -41,6 +47,7 @@ add_library(${SHARD_LIB}
 #add_subdirectory(examples/02-cube)
 #add_subdirectory(examples/03-texture)
 #add_subdirectory(examples/04-model)
+add_subdirectory(examples/05-imgui)
 
 # Compile Shaders
 file(GLOB GLSL_FILES 

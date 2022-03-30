@@ -2,3 +2,5 @@
 *.exe
 *.spv
 *.out
+*.u32
+/imgui.ini

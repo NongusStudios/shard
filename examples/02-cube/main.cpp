@@ -107,4 +107,7 @@ int main(){
     }
     gfx.device().waitIdle();
     gfx.destroyPipelineLayout(pLayout);
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
