@@ -14,7 +14,6 @@ int main(){
                                             .setMaxSets(1000).build();
 
     shard::imgui::init(window, gfx, descPool, VK_SAMPLE_COUNT_1_BIT);
-    ImGui::StyleColorsDark();
 
     shard::gfx::Color clearColor = {44.0f};
 
@@ -29,6 +28,8 @@ int main(){
             ImGui::Begin("Config");
             ImGui::ColorEdit3("clearColor", ccolor);
             clearColor = {ccolor[0]*255.0f, ccolor[1]*255.0f, ccolor[2]*255.0f};
+            if(ImGui::Button("Quit"))
+                glfwSetWindowShouldClose(window, true);
             ImGui::End();
             
             shard::imgui::endFrame(cmd);

@@ -14,6 +14,8 @@ Shard is a 2D game engine built with nothing but Vulkan and C++20 (
 > ![Alt text](examples/03-texture/output.png "Texture")
 ## [Model](examples/04-model)
 > ![Alt text](examples/04-model/output.png "Monkey")
+## [Imgui](examples/05-imgui)
+> ![Alt text](examples/05-imgui/output.png "Imgui")
 
 # License
 Shard is under the Apache License. [LICENSE](LICENSE)
