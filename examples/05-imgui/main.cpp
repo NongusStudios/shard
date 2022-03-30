@@ -36,7 +36,7 @@ int main(){
     initInfo.MinImageCount = 2;
     initInfo.ImageCount = shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT;
     initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    initInfo.Allocator = vmaGetAllocationCallbacks(gfx.device().allocator());
+    initInfo.Allocator = vmaGetAllocatorAllocationCallbacks(gfx.device().allocator());
     initInfo.CheckVkResultFn = checkVkResult;
     ImGui_ImplVulkan_Init(&initInfo, gfx.swapchain().renderPass());
 
