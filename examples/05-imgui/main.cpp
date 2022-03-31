@@ -86,7 +86,7 @@ int main(){
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
-        if(auto cmd = gfx.beginRenderPass(clearColor)){
+        if(auto cmd = gfx.beginRenderPass(nullptr, clearColor)){
             shard::imgui::startFrame();
             
             static float ccolor[3] = {44.0f/255.0f, 44.0f/255.0f, 44.0f/255.0f};
@@ -145,4 +145,6 @@ int main(){
     shard::imgui::terminate();
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    return 0;
 }

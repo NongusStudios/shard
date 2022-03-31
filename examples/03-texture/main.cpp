@@ -61,7 +61,7 @@ int main(){
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
 
-        if(auto commandBuffer = gfx.beginRenderPass({44.0f})){
+        if(auto commandBuffer = gfx.beginRenderPass(nullptr, {44.0f})){
             vkCmdBindDescriptorSets(
                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                 pipelineLayout, 0, 1, &descSet,
@@ -79,4 +79,6 @@ int main(){
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    return 0;
 }

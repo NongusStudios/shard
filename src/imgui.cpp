@@ -27,7 +27,7 @@ namespace shard{
             initInfo.MinImageCount = 2;
             initInfo.ImageCount = shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT;
             initInfo.MSAASamples = samples;
-            initInfo.Allocator = vmaGetAllocatorAllocationCallbacks(gfx.device().allocator());
+            initInfo.Allocator = nullptr;
             initInfo.CheckVkResultFn = shard::imgui::checkResult;
             ImGui_ImplVulkan_Init(&initInfo, gfx.swapchain().renderPass());
 

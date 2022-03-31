@@ -29,6 +29,8 @@ namespace shard{
             std::optional<uint32_t> graphics;
             std::optional<uint32_t> compute;
             std::optional<uint32_t> present;
+
+            uint32_t computeIndex = 0;
             bool complete() {
                 return graphics.has_value() &&
                        compute. has_value() &&

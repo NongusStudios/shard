@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,6 +11,7 @@
 #include "device.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
+#include "compute.hpp"
 #include "vertex.hpp"
 #include "buffer.hpp"
 #include "descriptor.hpp"
@@ -36,6 +38,7 @@ namespace shard{
                     return _defaultPipelineConfig;
                 }
                 VkCommandPool commandPool() { return _device->commandPool(); }
+                VkCommandPool computeCommandPool() { return _computeCommandPool; }
 
                 VkCommandBuffer currentCommandBuffer(){
                     assert(
@@ -52,6 +55,34 @@ namespace shard{
                     return currentFrameIndex;
                 }
 
+                VkCommandBuffer allocateComputeCommandBuffer();
+                void freeComputeCommandBuffer(VkCommandBuffer cmd);
+                VkResult beginComputeCommands(VkCommandBuffer cmd);
+                void submitComputeCommands(VkCommandBuffer cmd);
+                
+                ShaderModule createShaderModule(const char* filePath);
+                ShaderModule createShaderModule(const std::vector<char> srcSPV);
+
+                Compute createCompute(
+                    VkPipelineLayout layout,
+                    ShaderModule& shader
+                );
+                Compute createCompute(
+                    VkPipelineLayout layout,
+                    const char* filePath
+                );
+                Compute createCompute(
+                    VkPipelineLayout layout,
+                    const std::vector<char> shaderSPV
+                );
+                Pipeline createPipeline(
+                    VkPipelineLayout layout,
+                    ShaderModule& vert,
+                    ShaderModule& frag,
+                    const std::vector<VkVertexInputBindingDescription>& bindingDescs,
+                    const std::vector<VkVertexInputAttributeDescription>& attrDescs,
+                    PipelineConfigInfo& config
+                );
                 Pipeline createPipeline(
                     VkPipelineLayout layout,
                     const char* vertFile,
@@ -71,6 +102,7 @@ namespace shard{
                 Buffer createVertexBuffer(size_t size, const void* data);
                 Buffer createIndexBuffer(size_t size, const void* data);
                 Buffer createUniformBuffer(size_t size, const void* data);
+                Buffer createStorageBuffer(size_t size, const void* data);
                 Buffer createBuffer(
                     size_t sizeb,
                     VkBufferUsageFlags usageFlag,
@@ -120,10 +152,13 @@ namespace shard{
 
                 void setVsync(bool _vsync);
 
-                VkCommandBuffer beginRenderPass(const Color& clearColor);
+                VkCommandBuffer beginRenderPass(
+                    std::function<void(VkCommandBuffer)> preRenderPassCommands, const Color& clearColor
+                );
                 void endRenderPass();
             private:
                 void recreateSwapchain();
+                void createComputeCommandPool();
                 void createCommandBuffers();
                 void createEmptyPipelineLayout();
 
@@ -134,6 +169,7 @@ namespace shard{
                 PipelineConfigInfo _defaultPipelineConfig;
                 std::unique_ptr<Device> _device;
                 std::unique_ptr<Swapchain> _swapchain;
+                VkCommandPool _computeCommandPool;
 
                 bool isFrameStarted = false;
                 uint32_t currentFrameIndex = 0;

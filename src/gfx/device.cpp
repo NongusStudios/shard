@@ -15,22 +15,37 @@ namespace shard{
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-            int i = 0;
+            uint32_t i = 0;
             for (const auto &queueFamily : queueFamilies){
-                if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT){
+                if (!graphics.has_value() && queueFamily.queueCount > 0 &&
+                    queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT
+                ){
                     graphics = i;
                 }
-                if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT){
+                if (
+                    !compute.has_value() && graphics.has_value() && queueFamily.queueCount >= 2 &&
+                    queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT && graphics.value() == i
+                ){
                     compute = i;
+                    computeIndex = 1;
                 }
                 VkBool32 presentSupport = false;
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-                if (queueFamily.queueCount > 0 && presentSupport)
+                if (queueFamily.queueCount > 0 && presentSupport && !present.has_value())
                     present = i;
                 
                 if (complete()) break;
 
                 i++;
+            }
+
+            if(!complete() && !compute.has_value()){
+                i = 0;
+                for (const auto &queueFamily : queueFamilies){
+                    if(queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+                        compute = i;
+                    i++;
+                }
             }
         }
 
@@ -165,19 +180,21 @@ namespace shard{
         }
         void Device::createLogicalDevice(){
             QueueFamilyIndices indices = getQueueFamilyIndices();
+            shard_abort_ifnot(indices.complete());
 
             std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
             std::set<uint32_t> uniqueQueueFamilies = {
-                indices.graphics.value(), indices.present.value()
+                indices.graphics.value(), indices.present.value(),
+                indices.compute.value()
             };
 
-            float queuePriority = 1.0f;
+            float queuePriority[] = {0.9f, 1.0f};
             for(uint32_t queueFamily : uniqueQueueFamilies){
                 VkDeviceQueueCreateInfo queueCreateInfo = {};
                 queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 queueCreateInfo.queueFamilyIndex = queueFamily;
-                queueCreateInfo.queueCount = 1;
-                queueCreateInfo.pQueuePriorities = &queuePriority;
+                queueCreateInfo.queueCount = indices.computeIndex > 0 ? 2 : 1;
+                queueCreateInfo.pQueuePriorities = queuePriority;
                 queueCreateInfos.push_back(queueCreateInfo);
             }
 
@@ -203,9 +220,9 @@ namespace shard{
 
             shard_abort_ifnot(vkCreateDevice(_pDevice, &createInfo, nullptr, &_device) == VK_SUCCESS);
 
-            vkGetDeviceQueue(_device, indices.graphics.value(), 0, &_graphicsQueue);
-            vkGetDeviceQueue(_device, indices.compute.value(), 0, &_computeQueue);
-            vkGetDeviceQueue(_device, indices.present.value(), 0, &_presentQueue);
+            vkGetDeviceQueue(_device, indices.graphics.value(), 0,                    &_graphicsQueue);
+            vkGetDeviceQueue(_device, indices.present.value(),  0,                    &_presentQueue);
+            vkGetDeviceQueue(_device, indices.compute.value(),  indices.computeIndex, &_computeQueue);
         }
         void Device::createAllocator(){
             VmaAllocatorCreateInfo allocInfo = {};
@@ -385,6 +402,7 @@ namespace shard{
             return commandBuffer;
         }
         void Device::endSingleTimeCommands(VkCommandBuffer commandBuffer){
+            assert(commandBuffer != VK_NULL_HANDLE);
             vkEndCommandBuffer(commandBuffer);
 
             VkSubmitInfo submitInfo{};

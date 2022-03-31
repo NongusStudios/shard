@@ -1,6 +1,7 @@
 #include <shard/gfx/swapchain.hpp>
 
 #include <limits>
+#include <set>
 
 namespace shard{
     namespace gfx{
@@ -75,9 +76,15 @@ namespace shard{
             createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
             QueueFamilyIndices indices = device.getQueueFamilyIndices();
-            uint32_t queueFamilyIndices[] = {indices.graphics.value(), indices.present.value()};
-
-            if(indices.graphics.value() != indices.present.value()){
+            std::set<uint32_t> queueFamilyIndexSet = {
+                indices.graphics.value(),
+                indices.present.value()
+            };
+            if(queueFamilyIndexSet.size() > 1){
+                uint32_t queueFamilyIndices[] = {
+                    indices.graphics.value(),
+                    indices.present.value()
+                };
                 createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
                 createInfo.queueFamilyIndexCount = 2;
                 createInfo.pQueueFamilyIndices = queueFamilyIndices;

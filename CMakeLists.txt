@@ -47,7 +47,8 @@ add_library(${SHARD_LIB}
 #add_subdirectory(examples/02-cube)
 #add_subdirectory(examples/03-texture)
 #add_subdirectory(examples/04-model)
-add_subdirectory(examples/05-imgui)
+#add_subdirectory(examples/05-imgui)
+#add_subdirectory(examples/06-compute)
 
 # Compile Shaders
 file(GLOB GLSL_FILES 
@@ -68,6 +69,15 @@ file(GLOB GLSL_FILES
     examples/*.frag
     examples/**/*.frag
     examples/**/**/*.frag
+
+    shaders/*.comp
+    shaders/**/*.comp
+    shaders/**/**/*.comp
+    shaders/**/**/**/*.comp
+    shaders/**/**/**/**/*.comp
+    examples/*.comp
+    examples/**/*.comp
+    examples/**/**/*.comp
 )
 
 foreach(GLSL_FILE ${GLSL_FILES})

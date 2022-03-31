@@ -1,0 +1,31 @@
+#version 450
+
+layout (local_size_x = 1) in;
+
+
+layout (set = 0, binding = 0) uniform UBO{
+    int colorCount;
+    float seed;
+} ubo;
+struct ColorVertex {
+    vec2 pos;
+    vec3 color;
+};
+layout (std140, set = 0, binding = 1) buffer ColorBuffer{
+    ColorVertex data[];
+} colors;
+
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * ubo.seed);
+}
+
+void main(){
+    uint gID = gl_GlobalInvocationID.x;
+    if(gID < ubo.colorCount){
+        colors.data[gID].color = vec3(
+            rand(colors.data[gID].pos),
+            rand(colors.data[gID].pos+vec2(1.0, 1.0)),
+            rand(colors.data[gID].pos+vec2(2.0, 2.0))
+        );
+    }
+}

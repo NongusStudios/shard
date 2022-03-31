@@ -50,8 +50,10 @@ int main(){
     while(!glfwWindowShouldClose(window)){
         glfwPollEvents();
         // gfx.beginRenderPass() can return VK_NULL_HANDLE, if a window resize occurs
-        // The argument is the clear color in this case {44.0f, 44.0f, 44.0f, 255.0f}
-        if(auto commandBuffer = gfx.beginRenderPass({44.0f})){
+        // The first command is any Vulkan commands that you want to run before the render pass starts
+        // For example memory barriers
+        // The 2nd argument is the clear color in this case {44.0f, 44.0f, 44.0f, 255.0f}
+        if(auto commandBuffer = gfx.beginRenderPass(nullptr, {44.0f})){
             pipeline.bind(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS);
             vertexBuffer.bindVertex(commandBuffer);
             vkCmdDraw(commandBuffer, 3, 1, 0, 0);
@@ -61,4 +63,6 @@ int main(){
     gfx.device().waitIdle();
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    return 0;
 }

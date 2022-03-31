@@ -12,12 +12,14 @@ namespace shard{
             _device = std::make_unique<Device>(_window);
             _swapchain = std::make_unique<Swapchain>(*_device, getFramebufferExtent(_window), VSYNC);
             _defaultPipelineConfig.makeDefault();
+            createComputeCommandPool();
             createCommandBuffers();
             createEmptyPipelineLayout();
         }
         Graphics::~Graphics(){
             destroyCommandBuffers();
             vkDestroyPipelineLayout(_device->device(), _emptyPipelineLayout, nullptr);
+            vkDestroyCommandPool(_device->device(), _computeCommandPool, nullptr);
         }
 
         void Graphics::recreateSwapchain(){
@@ -30,6 +32,19 @@ namespace shard{
 
             std::shared_ptr<Swapchain> oldSwapchain = std::move(_swapchain);
             _swapchain = std::make_unique<Swapchain>(*_device, extent, VSYNC, oldSwapchain);
+        }
+        void Graphics::createComputeCommandPool(){
+             QueueFamilyIndices indices = _device->getQueueFamilyIndices();
+
+            VkCommandPoolCreateInfo poolInfo = {};
+            poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            poolInfo.queueFamilyIndex = indices.compute.value();
+            poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
+                             VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            shard_abort_ifnot(
+                vkCreateCommandPool(_device->device(), &poolInfo, nullptr, &_computeCommandPool)
+                == VK_SUCCESS
+            );
         }
         void Graphics::createCommandBuffers(){
             commandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
@@ -66,6 +81,88 @@ namespace shard{
             commandBuffers.clear();
         }
 
+        VkCommandBuffer Graphics::allocateComputeCommandBuffer(){
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandPool = _computeCommandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(_device->device(), &allocInfo, &commandBuffer);
+
+            return commandBuffer;
+        }
+        void Graphics::freeComputeCommandBuffer(VkCommandBuffer cmd){
+            assert(cmd != VK_NULL_HANDLE);
+            vkFreeCommandBuffers(_device->device(), _computeCommandPool, 1, &cmd);
+        }
+        VkResult Graphics::beginComputeCommands(VkCommandBuffer cmd){
+            assert(cmd != VK_NULL_HANDLE);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            
+            return vkBeginCommandBuffer(cmd, &beginInfo);
+        }
+        void Graphics::submitComputeCommands(VkCommandBuffer cmd){
+            assert(cmd != VK_NULL_HANDLE);
+            vkEndCommandBuffer(cmd);
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &cmd;
+
+            vkQueueSubmit(_device->computeQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(_device->computeQueue());
+        }
+
+        ShaderModule Graphics::createShaderModule(const char* filePath){
+            return ShaderModule(device(), filePath);
+        }
+        ShaderModule Graphics::createShaderModule(const std::vector<char> srcSPV){
+            return ShaderModule(device(), srcSPV);
+        }
+
+        Compute Graphics::createCompute(
+            VkPipelineLayout layout,
+            ShaderModule& shader
+        ){
+            return Compute(
+                device(), layout, shader
+            );
+        }
+        Compute Graphics::createCompute(
+            VkPipelineLayout layout,
+            const char* filePath
+        ){
+            return Compute(
+                device(), layout, filePath
+            );
+        }
+        Compute Graphics::createCompute(
+            VkPipelineLayout layout,
+            const std::vector<char> shaderSPV
+        ){
+            return Compute(
+                device(), layout, shaderSPV
+            );
+        }
+        Pipeline Graphics::createPipeline(
+            VkPipelineLayout layout,
+            ShaderModule& vert,
+            ShaderModule& frag,
+            const std::vector<VkVertexInputBindingDescription>& bindingDescs,
+            const std::vector<VkVertexInputAttributeDescription>& attrDescs,
+            PipelineConfigInfo& config
+        ){
+            return Pipeline(device(), swapchain().renderPass(), layout, 
+                vert, frag,
+                bindingDescs, attrDescs,
+                config
+            );
+        }
         Pipeline Graphics::createPipeline(
             VkPipelineLayout layout,
             const char* vertFile,
@@ -135,6 +232,15 @@ namespace shard{
                 device(), 
                 size, data,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VMA_MEMORY_USAGE_CPU_TO_GPU,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
+        }
+        Buffer Graphics::createStorageBuffer(size_t size, const void* data){
+            return Buffer(
+                device(),
+                size, data,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VMA_MEMORY_USAGE_CPU_TO_GPU,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
             );
@@ -258,7 +364,9 @@ namespace shard{
             recreateSwapchain();
         }
 
-        VkCommandBuffer Graphics::beginRenderPass(const Color& clearColor){
+        VkCommandBuffer Graphics::beginRenderPass(
+            std::function<void(VkCommandBuffer)> preRenderPassCommands, const Color& clearColor
+        ){
             assert(!isFrameStarted);
             VkResult result = _swapchain->acquireNextImage(&imageIndex);
             if(result == VK_ERROR_OUT_OF_DATE_KHR){
@@ -282,6 +390,8 @@ namespace shard{
                     &beginInfo
                 ) == VK_SUCCESS
             );
+
+            if(preRenderPassCommands) preRenderPassCommands(commandBuffer);
 
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

@@ -76,7 +76,7 @@ int main(){
         glfwPollEvents();
         shard::time::updateTime(time);
 
-        if(auto commandBuffer = gfx.beginRenderPass({44.0f})){
+        if(auto commandBuffer = gfx.beginRenderPass(nullptr, {44.0f})){
             VkExtent2D windowExtent = shard::getWindowExtent(window);
             tData.proj = glm::perspective(
                 glm::radians(45.0f),
@@ -110,4 +110,6 @@ int main(){
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    return 0;
 }
