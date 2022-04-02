@@ -18,8 +18,12 @@ int main(){
     
                                      // vsync
     shard::gfx::Graphics gfx(window, true);
-    auto vertexBuffer = gfx.createVertexBuffer(sizeof(vertices), vertices);
-    auto indexBuffer  = gfx.createIndexBuffer(sizeof(indices), indices);
+    auto vertexBuffer = gfx.createVertexBuffer(
+        sizeof(vertices), VK_SHARING_MODE_EXCLUSIVE, vertices
+    );
+    auto indexBuffer  = gfx.createIndexBuffer(
+        sizeof(indices), VK_SHARING_MODE_EXCLUSIVE, indices
+    );
     
     auto descriptorPool = gfx.createDescriptorPoolBuilder()
                              .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)

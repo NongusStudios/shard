@@ -8,13 +8,13 @@ namespace shard{
             size_t sizeb,
             VkBufferUsageFlags usageFlag,
             VmaMemoryUsage memUsage,
-            VkMemoryPropertyFlags memProps
+            VkMemoryPropertyFlags memProps,
+            VkSharingMode sharingMode
         ):
             device{_device},
-            _size{sizeb},
-            _usage{usageFlag}
+            _size{sizeb}
         {
-            createBuffer(nullptr, memUsage, memProps);
+            createBuffer(nullptr, usageFlag, memUsage, memProps, sharingMode);
         }
         Buffer::Buffer(
             Device& _device,
@@ -22,13 +22,13 @@ namespace shard{
             const void* data,
             VkBufferUsageFlags usageFlag,
             VmaMemoryUsage memUsage,
-            VkMemoryPropertyFlags memProps
+            VkMemoryPropertyFlags memProps,
+            VkSharingMode sharingMode
         ):
             device{_device},
-            _size{sizeb},
-            _usage{usageFlag}
+            _size{sizeb}
         {
-            createBuffer(data, memUsage, memProps);
+            createBuffer(data, usageFlag, memUsage, memProps, sharingMode);
         }
         Buffer::Buffer(Buffer& buf):
             device{buf.device}
@@ -36,7 +36,6 @@ namespace shard{
             //assert(buf.valid());
             _allocation = buf._allocation;
             _buffer = buf._buffer;
-            _usage = buf._usage;
             _size = buf._size;
             _mapped = buf._mapped;
             buf._allocation = VK_NULL_HANDLE;
@@ -49,7 +48,6 @@ namespace shard{
             //assert(buf.valid());
             _allocation = buf._allocation;
             _buffer = buf._buffer;
-            _usage = buf._usage;
             _size = buf._size;
             _mapped = buf._mapped;
             buf._allocation = VK_NULL_HANDLE;
@@ -68,7 +66,6 @@ namespace shard{
             vmaDestroyBuffer(device.allocator(), _buffer, _allocation);
             _allocation = buf._allocation;
             _buffer = buf._buffer;
-            _usage = buf._usage;
             _size = buf._size;
             _mapped = buf._mapped;
 
@@ -84,7 +81,6 @@ namespace shard{
             vmaDestroyBuffer(device.allocator(), _buffer, _allocation);
             _allocation = buf._allocation;
             _buffer = buf._buffer;
-            _usage = buf._usage;
             _size = buf._size;
             _mapped = buf._mapped;
 
@@ -100,16 +96,18 @@ namespace shard{
 
         void Buffer::createBuffer(
             const void* data,
+            VkBufferUsageFlags usage,
             VmaMemoryUsage memUsage,
-            VkMemoryPropertyFlags memProps
+            VkMemoryPropertyFlags memProps,
+            VkSharingMode sharingMode
         ){
             if(_size == 0) return;
 
             VkBufferCreateInfo bufferInfo = {};
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             bufferInfo.size = _size;
-            bufferInfo.usage = _usage;
-            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            bufferInfo.usage = usage;
+            bufferInfo.sharingMode = sharingMode;
 
             VmaAllocationCreateInfo allocInfo = {};
             allocInfo.usage = memUsage;

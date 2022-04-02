@@ -18,7 +18,8 @@ namespace shard{
                     size_t sizeb,
                     VkBufferUsageFlags usageFlag,
                     VmaMemoryUsage memUsage,
-                    VkMemoryPropertyFlags memProps
+                    VkMemoryPropertyFlags memProps,
+                    VkSharingMode sharingMode
                 );
                 Buffer(
                     Device& _device,
@@ -26,7 +27,8 @@ namespace shard{
                     const void* data,
                     VkBufferUsageFlags usageFlag,
                     VmaMemoryUsage memUsage,
-                    VkMemoryPropertyFlags memProps
+                    VkMemoryPropertyFlags memProps,
+                    VkSharingMode sharingMode
                 );
                 Buffer(Buffer& buf);
                 Buffer(Buffer&& buf);
@@ -76,7 +78,6 @@ namespace shard{
                 VkBuffer buffer() { return _buffer; }
                 const VmaAllocation allocation() const { return _allocation; }
                 const VkBuffer buffer() const { return _buffer; }
-                VkBufferUsageFlags usage() const { return _usage; }
                 void* mappedMemory() { return _mapped; }
                 bool mapped() const { return _mapped != nullptr; }
                 static VkDeviceSize getAlignment(
@@ -89,16 +90,17 @@ namespace shard{
                 }
             private:
                 void createBuffer(
-                    const void* data, 
+                    const void* data,
+                    VkBufferUsageFlags usage,
                     VmaMemoryUsage memUsage,
-                    VkMemoryPropertyFlags memProps
+                    VkMemoryPropertyFlags memProps,
+                    VkSharingMode sharingMode
                 );
 
                 Device& device;
                 VmaAllocation _allocation = VK_NULL_HANDLE;
                 size_t _size = 0;
                 VkBuffer _buffer = VK_NULL_HANDLE;
-                VkBufferUsageFlags _usage;
                 void* _mapped = nullptr;
         };
     } // namespace gfx

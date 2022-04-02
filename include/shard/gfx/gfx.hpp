@@ -22,6 +22,11 @@
 // (https://github.com/blurrypiano/littleVulkanEngine)
 namespace shard{
     namespace gfx{
+        struct ComputeCommands{
+            VkCommandBuffer cmd;
+            
+        };
+
         class Graphics{
             public:
                 Graphics(GLFWwindow* win, bool vsync);
@@ -99,15 +104,17 @@ namespace shard{
                     const std::vector<VkVertexInputAttributeDescription>& attrDescs,
                     PipelineConfigInfo& config
                 );
-                Buffer createVertexBuffer(size_t size, const void* data);
-                Buffer createIndexBuffer(size_t size, const void* data);
-                Buffer createUniformBuffer(size_t size, const void* data);
-                Buffer createStorageBuffer(size_t size, const void* data);
+                Buffer createVertexBuffer(size_t size, VkSharingMode sharingMode, const void* data);
+                Buffer createIndexBuffer(size_t size, VkSharingMode sharingMode, const void* data);
+                Buffer createUniformBuffer(size_t size, VkSharingMode sharingMode, const void* data);
+                Buffer createStorageBuffer(size_t size, VkSharingMode sharingMode, const void* data);
+                Buffer createStorageBuffer_GPUonly(size_t size, VkSharingMode sharingMode, const void* data);
                 Buffer createBuffer(
                     size_t sizeb,
                     VkBufferUsageFlags usageFlag,
                     VmaMemoryUsage memUsage,
                     VkMemoryPropertyFlags memProps,
+                    VkSharingMode sharingMode,
                     const void* data=nullptr
                 );
                 
@@ -121,7 +128,8 @@ namespace shard{
                     VkImageUsageFlags usage,
                     VkImageCreateFlags flags,
                     VmaMemoryUsage memUsage,
-                    VkImageAspectFlags aspectMask
+                    VkImageAspectFlags aspectMask,
+                    VkSharingMode sharingMode
                 );
                 Framebuffer createFramebuffer(std::vector<Image>& attachments);
                 Framebuffer createFramebuffer(

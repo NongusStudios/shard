@@ -38,7 +38,9 @@ int main(){
 
                                      // vsync
     shard::gfx::Graphics gfx(window, true);
-    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(sizeof(vertices), vertices);
+    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(
+        sizeof(vertices), VK_SHARING_MODE_EXCLUSIVE, vertices
+    );
 
     shard::gfx::Pipeline pipeline = gfx.createPipeline(
         gfx.emptyPipelineLayout(),

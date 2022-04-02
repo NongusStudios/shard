@@ -58,8 +58,12 @@ int main(){
                                             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100)
                                             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100)
                                             .setMaxSets(1000).build();
-    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(sizeof(vertices), vertices);
-    shard::gfx::Buffer   indexBuffer  = gfx.createIndexBuffer( sizeof(indices),  indices);
+    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(
+        sizeof(vertices), VK_SHARING_MODE_EXCLUSIVE, vertices
+    );
+    shard::gfx::Buffer   indexBuffer  = gfx.createIndexBuffer(
+         sizeof(indices), VK_SHARING_MODE_EXCLUSIVE,  indices
+    );
     
     VkPushConstantRange pushConstantRange = {};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -118,8 +122,8 @@ int main(){
             
             tData.model = glm::mat4(1.0f);
             tData.model = glm::translate(tData.model, pos);
-            tData.model = glm::rotate(tData.model, rot.x, {0.0f, 1.0f, 0.0f});
-            tData.model = glm::rotate(tData.model, rot.y, {1.0f, 0.0f, 0.0f});
+            tData.model = glm::rotate(tData.model, rot.y, {0.0f, 1.0f, 0.0f});
+            tData.model = glm::rotate(tData.model, rot.x, {1.0f, 0.0f, 0.0f});
             tData.model = glm::rotate(tData.model, rot.z, {0.0f, 0.0f, 1.0f});
             tData.model = glm::scale(tData.model, scale);
 

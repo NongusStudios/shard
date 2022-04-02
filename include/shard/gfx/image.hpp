@@ -51,6 +51,7 @@ namespace shard{
                     VkImageCreateFlags flags,
                     VmaMemoryUsage memUsage,
                     VkImageAspectFlags aspectMask,
+                    VkSharingMode sharingMode,
                     const void* pixels=nullptr
                 );
                 Image(Image& i);

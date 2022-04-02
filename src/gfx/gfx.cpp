@@ -113,6 +113,7 @@ namespace shard{
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &cmd;
+            
 
             vkQueueSubmit(_device->computeQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(_device->computeQueue());
@@ -191,68 +192,92 @@ namespace shard{
                 config
             );
         }
-        Buffer Graphics::createVertexBuffer(size_t size, const void* data){
+        Buffer Graphics::createVertexBuffer(size_t size, VkSharingMode sharingMode,const void* data){
             Buffer stagingBuffer = Buffer(
                 device(),
                 size, data,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VMA_MEMORY_USAGE_CPU_ONLY,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                VK_SHARING_MODE_EXCLUSIVE
             );
             Buffer vBuf = Buffer(
                 device(),
                 size,
                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                 VMA_MEMORY_USAGE_GPU_ONLY,
-                0
+                0, sharingMode
             );
             device().copyBuffer(stagingBuffer.buffer(), vBuf.buffer(), size);
             return vBuf;
         }
-        Buffer Graphics::createIndexBuffer(size_t size, const void* data){
+        Buffer Graphics::createIndexBuffer(size_t size, VkSharingMode sharingMode, const void* data){
             Buffer stagingBuffer = Buffer(
                 device(),
                 size, data,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VMA_MEMORY_USAGE_CPU_ONLY,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                VK_SHARING_MODE_EXCLUSIVE
             );
             Buffer iBuf = Buffer(
                 device(),
                 size,
                 VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                 VMA_MEMORY_USAGE_GPU_ONLY,
-                0
+                0, sharingMode
             );
             device().copyBuffer(stagingBuffer.buffer(), iBuf.buffer(), size);
             return iBuf;
         }
-        Buffer Graphics::createUniformBuffer(size_t size, const void* data){
+        Buffer Graphics::createUniformBuffer(size_t size, VkSharingMode sharingMode, const void* data){
             return Buffer(
                 device(), 
                 size, data,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VMA_MEMORY_USAGE_CPU_TO_GPU,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                sharingMode
             );
         }
-        Buffer Graphics::createStorageBuffer(size_t size, const void* data){
+        Buffer Graphics::createStorageBuffer(size_t size, VkSharingMode sharingMode, const void* data){
             return Buffer(
                 device(),
                 size, data,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VMA_MEMORY_USAGE_CPU_TO_GPU,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                sharingMode
             );
+        }
+        Buffer Graphics::createStorageBuffer_GPUonly(size_t size, VkSharingMode sharingMode, const void* data){
+            Buffer stagingBuffer = Buffer(
+                device(),
+                size, data,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VMA_MEMORY_USAGE_CPU_ONLY,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+                VK_SHARING_MODE_EXCLUSIVE
+            );
+            Buffer sBuf = Buffer(
+                device(),
+                size,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VMA_MEMORY_USAGE_GPU_ONLY,
+                0, sharingMode
+            );
+            device().copyBuffer(stagingBuffer.buffer(), sBuf.buffer(), size);
+            return sBuf;
         }
         Buffer Graphics::createBuffer(
             size_t sizeb,
             VkBufferUsageFlags usageFlag,
             VmaMemoryUsage memUsage,
             VkMemoryPropertyFlags memProps,
+            VkSharingMode sharingMode,
             const void* data
         ){
-            return Buffer(device(), sizeb, data, usageFlag, memUsage, memProps);
+            return Buffer(device(), sizeb, data, usageFlag, memUsage, memProps, sharingMode);
         }
         Image Graphics::createTexture(const char* filePath){
             return Image(*_device, filePath);
@@ -268,14 +293,16 @@ namespace shard{
             VkImageUsageFlags usage,
             VkImageCreateFlags flags,
             VmaMemoryUsage memUsage,
-            VkImageAspectFlags aspectMask
+            VkImageAspectFlags aspectMask,
+            VkSharingMode sharingMode
         ){
             return Image(*_device,
                 w, h, mipLevels,
                 0, format, tiling,
                 samples, usage,
                 flags, memUsage,
-                aspectMask
+                aspectMask,
+                sharingMode
             );
         }
         Framebuffer Graphics::createFramebuffer(std::vector<Image>& attachments){

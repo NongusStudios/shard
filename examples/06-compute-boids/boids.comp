@@ -1,0 +1,91 @@
+#version 450
+
+// Based on
+// https://github.com/Shinao/Unity-GPU-Boids/blob/master/Assets/2-GPU_Boids_Compute/Boid_Simple.compute
+
+layout (local_size_x = 256) in;
+
+layout (set = 0, binding = 0) uniform ComputeData{
+    float deltaTime;
+    float rotationSpeed;
+    float boidSpeed;
+    float boidSpeedVariation;
+    vec2  flockPosition;
+    float neighbourDistance;
+    int   boidCount;
+    vec2  time;
+} computeData;
+
+struct Boid{
+    vec2  position;
+    vec2  direction;
+    float noiseOffset;
+    vec3  color;
+};
+layout (std140,set = 0, binding = 1) buffer BoidBuffer{
+    Boid boids[];
+} boids;
+
+float hash(float n){
+    return fract(sin(n)*43758.5453);
+}
+float noise1(vec2 x){
+    vec2 p = floor(x);
+    vec2 f = fract(x);
+
+    f       = f*f*(3.0-2.0*f);
+    float n = p.x + p.y*57.0 + 113.0;
+
+    return mix(mix(mix( hash(n+0.0), hash(n+1.0),f.x),
+					mix( hash(n+57.0), hash(n+58.0),f.x),f.y),
+				mix(mix( hash(n+113.0), hash(n+114.0),f.x),
+					mix( hash(n+170.0), hash(n+171.0),f.x),f.y),f.y);
+}
+
+
+void main(){
+    uint gID = gl_GlobalInvocationID.x;
+    if(gID < computeData.boidCount){
+        Boid boid = boids.boids[gID];
+        boid.color = vec3(1.0, 0.0, 1.0);
+
+        float noise = clamp(noise1(computeData.time/100.0 + boid.noiseOffset), -1.0, 1.0) * 2.0 - 1.0;
+        float velocity = computeData.boidSpeed * (1.0 + noise * computeData.boidSpeedVariation);
+
+        vec2 separation = vec2(0.0, 0.0);
+        vec2 alignment = vec2( 0.0,  0.0);
+        vec2 cohesion = computeData.flockPosition;
+
+        uint nearbyCount = 1;
+        
+        for(int i = 0; i < computeData.boidCount; i++){
+            if(i != gID){
+                Boid currentBoid = boids.boids[i];
+                if(distance(boid.position, currentBoid.position) < computeData.neighbourDistance){
+                    vec2  diff = boid.position - currentBoid.position;
+                    float diffLen = length(diff);
+                    float scalar = clamp(1.0 - diffLen / computeData.neighbourDistance, 0.0, 1.0);
+                    separation += diff * (scalar / diffLen);
+
+                    alignment += currentBoid.direction;
+                    cohesion  += currentBoid.position;
+                    nearbyCount++;
+                }
+            }
+        }
+
+        float avg = 1.0 / nearbyCount;
+        alignment *= avg;
+        cohesion  *= avg;
+        cohesion  =  normalize(cohesion - boid.position);
+
+        vec2 direction = alignment + separation + cohesion;
+        
+        float ip = exp(-computeData.rotationSpeed * computeData.deltaTime);
+        boid.direction = mix(direction, normalize(boid.direction), ip);
+
+        boid.position += boid.direction * (velocity * computeData.deltaTime);
+        
+        boids.boids[gID] = boid;
+    }
+}

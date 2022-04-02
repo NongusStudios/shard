@@ -53,8 +53,12 @@ int main(){
     vertexAttrib[1].offset   = offsetof(Vertex, color);
                                      // vsync
     shard::gfx::Graphics gfx(window, true);
-    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(sizeof(vertices), vertices);
-    shard::gfx::Buffer   indexBuffer  = gfx.createIndexBuffer( sizeof(indices),  indices);
+    shard::gfx::Buffer   vertexBuffer = gfx.createVertexBuffer(
+        sizeof(vertices), VK_SHARING_MODE_EXCLUSIVE, vertices
+    );
+    shard::gfx::Buffer   indexBuffer  = gfx.createIndexBuffer( 
+        sizeof(indices),  VK_SHARING_MODE_EXCLUSIVE, indices
+    );
 
     VkPushConstantRange pushConstantRange = {};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;

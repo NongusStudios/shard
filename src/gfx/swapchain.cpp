@@ -204,7 +204,8 @@ namespace shard{
                     1, 0, depthFormat, VK_IMAGE_TILING_OPTIMAL,
                     VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                     0, VMA_MEMORY_USAGE_GPU_ONLY,
-                    VK_IMAGE_ASPECT_DEPTH_BIT  
+                    VK_IMAGE_ASPECT_DEPTH_BIT,
+                    VK_SHARING_MODE_EXCLUSIVE
                 ));
             }
         }

@@ -48,7 +48,7 @@ add_library(${SHARD_LIB}
 #add_subdirectory(examples/03-texture)
 #add_subdirectory(examples/04-model)
 #add_subdirectory(examples/05-imgui)
-#add_subdirectory(examples/06-compute)
+add_subdirectory(examples/06-compute-boids)
 
 # Compile Shaders
 file(GLOB GLSL_FILES 

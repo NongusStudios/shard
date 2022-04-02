@@ -21,6 +21,7 @@ namespace shard{
                 0,
                 VMA_MEMORY_USAGE_GPU_ONLY,
                 VK_IMAGE_ASPECT_COLOR_BIT,
+                VK_SHARING_MODE_EXCLUSIVE,
                 pixels
             );
 
@@ -37,6 +38,7 @@ namespace shard{
                 0,
                 VMA_MEMORY_USAGE_GPU_ONLY,
                 VK_IMAGE_ASPECT_COLOR_BIT,
+                VK_SHARING_MODE_EXCLUSIVE,
                 pixels
             )
         {}
@@ -48,6 +50,7 @@ namespace shard{
             VkImageCreateFlags flags,
             VmaMemoryUsage memUsage,
             VkImageAspectFlags aspectMask,
+            VkSharingMode sharingMode,
             const void* pixels
         ):
             device{_device},
@@ -69,7 +72,8 @@ namespace shard{
                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                     VMA_MEMORY_USAGE_CPU_ONLY,
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT  |
-                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    VK_SHARING_MODE_EXCLUSIVE
                 );
             }
 
@@ -85,7 +89,7 @@ namespace shard{
             imageInfo.tiling = _tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = usage;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.sharingMode = sharingMode;
             imageInfo.samples = samples;
             imageInfo.flags = flags;
 

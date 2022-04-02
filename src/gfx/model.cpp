@@ -17,13 +17,13 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vertices.size()*sizeof(Vertex2D),
+                    vertices.size()*sizeof(Vertex2D), VK_SHARING_MODE_EXCLUSIVE,
                     vertices.data()
                 )
             },
             iBuffer{
                 gfx.createIndexBuffer(
-                    indices.size()*sizeof(uint32_t),
+                    indices.size()*sizeof(uint32_t), VK_SHARING_MODE_EXCLUSIVE,
                     indices.data()
                 )
             },
@@ -38,13 +38,13 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vertices.size()*sizeof(Vertex3D),
+                    vertices.size()*sizeof(Vertex3D), VK_SHARING_MODE_EXCLUSIVE,
                     vertices.data()
                 )
             },
             iBuffer{
                 gfx.createIndexBuffer(
-                    indices.size()*sizeof(uint32_t),
+                    indices.size()*sizeof(uint32_t), VK_SHARING_MODE_EXCLUSIVE,
                     indices.data()
                 )
             },
@@ -59,13 +59,13 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vcount*sizeof(Vertex2D),
+                    vcount*sizeof(Vertex2D), VK_SHARING_MODE_EXCLUSIVE,
                     vertices
                 )
             },
             iBuffer{
                 gfx.createIndexBuffer(
-                    icount*sizeof(uint32_t),
+                    icount*sizeof(uint32_t), VK_SHARING_MODE_EXCLUSIVE,
                     indices
                 )
             },
@@ -80,13 +80,13 @@ namespace shard{
             gfx{_gfx},
             vBuffer{
                 gfx.createVertexBuffer(
-                    vcount*sizeof(Vertex3D),
+                    vcount*sizeof(Vertex3D), VK_SHARING_MODE_EXCLUSIVE,
                     vertices
                 )
             },
             iBuffer{
                 gfx.createIndexBuffer(
-                    icount*sizeof(uint32_t),
+                    icount*sizeof(uint32_t), VK_SHARING_MODE_EXCLUSIVE,
                     indices
                 )
             },

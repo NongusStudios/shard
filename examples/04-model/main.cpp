@@ -31,7 +31,9 @@ int main(){
     std::vector<VkDescriptorSet> descSets(shard::gfx::Swapchain::MAX_FRAMES_IN_FLIGHT);
     size_t i = 0;
     for(auto& descSet : descSets){
-        uBuffers.push_back(gfx.createUniformBuffer(sizeof(UBO), nullptr));
+        uBuffers.push_back(gfx.createUniformBuffer(
+            sizeof(UBO), VK_SHARING_MODE_EXCLUSIVE, nullptr
+        ));
         uBuffers[i].map();
         auto descInfo = uBuffers[i].descriptorInfo();
         shard::gfx::DescriptorWriter(descriptorLayout, descriptorPool)
