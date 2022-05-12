@@ -4,3 +4,6 @@
 *.out
 *.u32
 /imgui.ini
+/.vscode
+/Debug
+/Release

@@ -1,6 +1,7 @@
 #include <shard/gfx/swapchain.hpp>
 
 #include <limits>
+#include <array>
 #include <set>
 
 namespace shard{
